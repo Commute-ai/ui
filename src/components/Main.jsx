@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Button } from 'react-native'; // Added Button
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './Login.jsx';
+import Registration from './Registration.jsx'; // Import RegistrationScreen
 import { StatusBar } from 'expo-status-bar';
 
 // Placeholder HomeScreen - you can replace this with your actual home screen content
@@ -33,6 +34,7 @@ export default function Main() {
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login' }} />
         <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+        <Stack.Screen name="Register" component={Registration} options={{ title: 'Register' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
