@@ -2,12 +2,13 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, main]
   pull_request:
-    branches: [ master ]
+    branches: [master, main]
 
 jobs:
-  build:
+  test:
+    name: Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -15,17 +16,170 @@ jobs:
         node-version: [22.x]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: 🔧 Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: 📦 Install dependencies
+        run: npm ci
 
-    - name: Run tests
-      run: npm test
+      - name: 🔍 Lint
+        run: npm run lint
+
+      - name: 🧪 Test
+        run: npm test
+
+  # OTA update on every push
+  ota-update:
+    needs: test
+    if: |
+      github.event_name == 'push' && 
+      !startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: 🔨 Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🎯 Determine update channel
+        id: channel
+        run: |
+          if [[ $GITHUB_REF == refs/heads/main ]] || [[ $GITHUB_REF == refs/heads/master ]]; then
+            echo "channel=preview" >> $GITHUB_OUTPUT
+            echo "branch_name=main" >> $GITHUB_OUTPUT
+          else
+            echo "channel=development" >> $GITHUB_OUTPUT
+            echo "branch_name=develop" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🚀 Push OTA Update
+        run: |
+          echo "📱 Pushing update to ${{ steps.channel.outputs.channel }} channel"
+          eas update \
+            --branch ${{ steps.channel.outputs.channel }} \
+            --message "${{ github.event.head_commit.message }}"
+          echo "✅ Update published! All installed apps will receive it automatically."
+
+      - name: 💬 Comment on commit
+        uses: actions/github-script@v6
+        if: always()
+        with:
+          script: |
+            const emoji = context.job.status === 'success' ? '✅' : '❌';
+            const status = context.job.status === 'success' ? 'published' : 'failed';
+            const message = `${emoji} OTA Update ${status} to \`${{ steps.channel.outputs.channel }}\` channel\n\n` +
+                          `All devices with the app installed will receive this update automatically on next launch.`;
+
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: message
+            });
+
+  build:
+    name: Build Preview APK
+    runs-on: ubuntu-latest
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: 🔨 Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build APK
+        run: |
+          echo "🚀 Building release APK for ${{ github.ref_name }}"
+          echo "⏱️  This will take ~15-20 minutes"
+          eas build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --no-wait
+
+      - name: 📋 Build Instructions
+        run: |
+          echo "========================================"
+          echo "✅ Build started successfully!"
+          echo "========================================"
+          echo ""
+          echo "📥 Download APK when ready from:"
+          echo "   https://expo.dev"
+          echo ""
+          echo "📦 After downloading, upload to GitHub Release:"
+          echo "   https://github.com/${{ github.repository }}/releases/new?tag=${{ github.ref_name }}"
+          echo ""
+          echo "⏱️  Build typically takes 15-20 minutes"
+          echo "🔔 You'll receive an email when complete"
+          echo "========================================"
+
+      - name: 💬 Comment on tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const message = `🏗️ **APK Build Started for ${context.ref.replace('refs/tags/', '')}**\n\n` +
+                          `⏱️ Build will take approximately 15-20 minutes\n` +
+                          `📥 Download from: https://expo.dev\n` +
+                          `📦 Then upload to: https://github.com/${context.repo.owner}/${context.repo.repo}/releases\n\n` +
+                          `🔔 You'll receive an email notification when the build completes.`;
+
+            // Try to comment on release if it exists
+            try {
+              const release = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: context.ref.replace('refs/tags/', '')
+              });
+              
+              await github.rest.repos.createReleaseComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.data.id,
+                body: message
+              });
+            } catch (error) {
+              console.log('Release not created yet, skipping comment');
+            }
