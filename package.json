@@ -1,7 +1,7 @@
 {
   "name": "commute-ai-ui",
-  "version": "1.0.0",
-  "description": "A React Native for commute ai",
+  "version": "0.1.0",
+  "description": "Commute AI - Your intelligent commute companion",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
