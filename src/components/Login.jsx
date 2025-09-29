@@ -33,7 +33,7 @@ const LoginScreen = ({ navigation }) => {
       <Button title="Login" onPress={handleLogin} testID="loginButton" />
       {/* Example: Add a button to navigate to a registration screen */}
       <Button
-        title="Don\'t have an account? Sign Up"
+        title="Don't have an account? Sign Up"
         onPress={() => navigation.navigate('Register')} // Assuming you have a 'Register' screen
       />
     </View>
