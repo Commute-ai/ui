@@ -9,13 +9,20 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+    "prebuild": "expo prebuild",
+    "build:android": "eas build --platform android --profile preview",
+    "publish": "expo publish",
+    "update": "eas update --branch production",
+    "eject": "expo eject"
   },
   "dependencies": {
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.12",
     "expo": "^54.0.10",
     "expo-status-bar": "~3.0.8",
+    "expo-updates": "~29.0.11",
     "formik": "^2.4.2",
     "react": "19.1.0",
     "react-native": "0.81.4",
