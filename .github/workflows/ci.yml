@@ -7,9 +7,9 @@ permissions:
 
 on:
   push:
-    branches: [master, main]
+    branches: [master, main, develop]
   pull_request:
-    branches: [master, main]
+    branches: [master, main, develop]
 
 env:
   NODE_VERSION: 22.x
