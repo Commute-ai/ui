@@ -1,7 +1,7 @@
 {
-  "name": "commute-ai-ui",
+  "name": "commuteai-ui",
   "version": "0.1.0",
-  "description": "Commute AI - Your intelligent commute companion",
+  "description": "Commute.ai - Your intelligent commute companion",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",

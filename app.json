@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Commute AI",
-    "slug": "commute-ai-ui",
+    "slug": "commuteai-ui",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.commuteai.app"
@@ -25,6 +27,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "65c7b38d-2455-4148-92f3-b3f39a877324"
+      }
+    },
+    "owner": "commuteai"
   }
 }
