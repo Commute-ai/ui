@@ -69,10 +69,10 @@ jobs:
         id: channel
         run: |
           if [[ $GITHUB_REF == refs/heads/main ]] || [[ $GITHUB_REF == refs/heads/master ]]; then
-            echo "channel=preview" >> $GITHUB_OUTPUT
+            echo "channel=production" >> $GITHUB_OUTPUT
             echo "branch_name=main" >> $GITHUB_OUTPUT
           else
-            echo "channel=development" >> $GITHUB_OUTPUT
+            echo "channel=staging" >> $GITHUB_OUTPUT
             echo "branch_name=develop" >> $GITHUB_OUTPUT
           fi
 
