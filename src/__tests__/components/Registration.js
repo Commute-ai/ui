@@ -103,7 +103,7 @@ describe('Registration Component', () => {
     fireEvent.press(getByText('Register'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('Error', "Passwords don\'t match!");
+      expect(Alert.alert).toHaveBeenCalledWith('Error', "Passwords don't match!");
     });
     expect(mockNavigation.navigate).not.toHaveBeenCalled();
     expect(global.fetch).not.toHaveBeenCalled();

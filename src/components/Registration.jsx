@@ -73,7 +73,7 @@ export default function Registration({ navigation }) {
 
       // HTTP request was successful (2xx status)
       // Attempt to parse. If it fails, main catch will handle.
-      const data = JSON.parse(responseText); 
+      JSON.parse(responseText); 
       Alert.alert('Success', 'Registration successful!'); // Or handle token `data.access_token`
       navigation.navigate('Login');
 
