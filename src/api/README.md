@@ -29,12 +29,13 @@ src/
 The environment configuration automatically selects the appropriate backend URL based on the EAS Update channel:
 
 ```javascript
-import config from './config/environment';
+import config from "./config/environment";
 
 console.log(config.apiUrl); // Automatically set based on channel
 ```
 
 **Channels:**
+
 - `development`: Uses `http://localhost:8000/api/v1` (local development)
 - `staging` or `preview`: Uses `https://backend.staging.commute.ai.ender.fi/api/v1`
 - `production`: Uses `https://api.commute.ai/api/v1`
@@ -45,19 +46,19 @@ console.log(config.apiUrl); // Automatically set based on channel
 The API client provides a clean interface for making HTTP requests:
 
 ```javascript
-import { apiClient } from './api';
+import { apiClient } from "./api";
 
 // GET request
-const data = await apiClient.get('/users');
+const data = await apiClient.get("/users");
 
 // POST request
-const result = await apiClient.post('/users', { name: 'John' });
+const result = await apiClient.post("/users", { name: "John" });
 
 // PUT request
-const updated = await apiClient.put('/users/1', { name: 'Jane' });
+const updated = await apiClient.put("/users/1", { name: "Jane" });
 
 // DELETE request
-const deleted = await apiClient.delete('/users/1');
+const deleted = await apiClient.delete("/users/1");
 ```
 
 **Error Handling:**
@@ -66,10 +67,10 @@ The API client automatically converts server errors into user-friendly messages:
 
 ```javascript
 try {
-  await apiClient.post('/auth/register', { email, password });
+    await apiClient.post("/auth/register", { email, password });
 } catch (error) {
-  // error.message contains a user-friendly error message
-  Alert.alert('Error', error.message);
+    // error.message contains a user-friendly error message
+    Alert.alert("Error", error.message);
 }
 ```
 
@@ -78,14 +79,14 @@ try {
 The auth API provides convenient methods for authentication:
 
 ```javascript
-import { authApi } from './api';
+import { authApi } from "./api";
 
 // Register a new user
 try {
-  const response = await authApi.register(email, password);
-  // Handle successful registration
+    const response = await authApi.register(email, password);
+    // Handle successful registration
 } catch (error) {
-  // Handle error
+    // Handle error
 }
 
 // Login
@@ -100,25 +101,27 @@ await authApi.logout();
 Here's how to use the API library in a component:
 
 ```javascript
-import React from 'react';
-import { Alert } from 'react-native';
-import { authApi } from '../api';
+import { authApi } from "../api";
+
+import React from "react";
+
+import { Alert } from "react-native";
 
 export default function Registration({ navigation }) {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
 
-  const handleRegister = async () => {
-    try {
-      await authApi.register(email, password);
-      Alert.alert('Success', 'Registration successful!');
-      navigation.navigate('Login');
-    } catch (error) {
-      Alert.alert('Registration Failed', error.message);
-    }
-  };
+    const handleRegister = async () => {
+        try {
+            await authApi.register(email, password);
+            Alert.alert("Success", "Registration successful!");
+            navigation.navigate("Login");
+        } catch (error) {
+            Alert.alert("Registration Failed", error.message);
+        }
+    };
 
-  // ... rest of component
+    // ... rest of component
 }
 ```
 
@@ -128,16 +131,16 @@ To add new API endpoints, create a new file in the `api` directory:
 
 ```javascript
 // src/api/users.js
-import apiClient from './client';
+import apiClient from "./client";
 
 const usersApi = {
-  async getProfile() {
-    return apiClient.get('/users/profile');
-  },
+    async getProfile() {
+        return apiClient.get("/users/profile");
+    },
 
-  async updateProfile(data) {
-    return apiClient.put('/users/profile', data);
-  },
+    async updateProfile(data) {
+        return apiClient.put("/users/profile", data);
+    },
 };
 
 export default usersApi;
@@ -146,9 +149,9 @@ export default usersApi;
 Then export it from `src/api/index.js`:
 
 ```javascript
-export { default as apiClient } from './client';
-export { default as authApi } from './auth';
-export { default as usersApi } from './users'; // Add new API
+export { default as apiClient } from "./client";
+export { default as authApi } from "./auth";
+export { default as usersApi } from "./users"; // Add new API
 ```
 
 ## Error Handling
@@ -183,6 +186,7 @@ npm test
 ```
 
 Tests cover:
+
 - Environment configuration for all channels
 - API client request methods (GET, POST, PUT, DELETE)
 - Error handling scenarios
@@ -197,6 +201,7 @@ When running locally with `expo start`, the app uses the development configurati
 ### Staging Builds
 
 When building for staging with:
+
 ```bash
 npm run build:staging:android
 ```
@@ -206,6 +211,7 @@ The app uses the staging configuration defined in `eas.json` (channel: `staging`
 ### Production Builds
 
 When building for production with:
+
 ```bash
 npm run build:production:android
 ```
