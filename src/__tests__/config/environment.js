@@ -14,18 +14,18 @@ jest.mock("expo-constants", () => ({
 // Mock react-native's Platform and NativeModules
 jest.mock("react-native", () => {
     const RN = jest.requireActual("react-native");
-    
+
     // Ensure NativeModules exists
     if (!RN.NativeModules) {
         RN.NativeModules = {};
     }
-    
+
     // Mock DevMenu
     RN.NativeModules.DevMenu = {
         show: jest.fn(),
         reload: jest.fn(),
     };
-    
+
     // Mock SettingsManager
     RN.NativeModules.SettingsManager = {
         settings: {
@@ -46,7 +46,7 @@ jest.mock("react-native", () => {
         // Mock TurboModuleRegistry if needed
         TurboModuleRegistry: {
             getEnforcing: jest.fn((name) => {
-                if (name === 'DevMenu') {
+                if (name === "DevMenu") {
                     return RN.NativeModules.DevMenu;
                 }
                 return null;

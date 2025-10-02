@@ -21,10 +21,16 @@ class MockApiClient {
     }
 
     async put(endpoint, data) {
+        if (endpoint.include("/ping")) {
+            return { data: { ...data, pong: true } };
+        }
         return { data: { ...data, id: 1 } };
     }
 
     async delete(endpoint) {
+        if (endpoint.include("/ping")) {
+            return { data: { pong: true } };
+        }
         return { data: { success: true } };
     }
 }
