@@ -56,7 +56,9 @@ class ApiClient {
         return JSON.parse(responseText);
       } catch (parseError) {
         console.error('Failed to parse success response JSON:', parseError);
-        throw new Error('Received an invalid data format from the server.');
+        const error = new Error('Received an invalid data format from the server.');
+        error.userFriendly = true;
+        throw error;
       }
     } catch (error) {
       // Handle network errors and other exceptions
@@ -67,7 +69,9 @@ class ApiClient {
       
       console.error('API request error:', error);
       
-      if (error.message && error.message.toLowerCase().includes('network request failed')) {
+      if (error instanceof SyntaxError) {
+        throw new Error('Received an invalid data format from the server.');
+      } else if (error.message && error.message.toLowerCase().includes('network request failed')) {
         throw new Error('Could not connect to the server. Please check your network connection.');
       }
       
