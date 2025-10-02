@@ -1,8 +1,8 @@
 import App from "../../../App";
 
-import React from "react";
-
 import { render } from "@testing-library/react-native";
+
+jest.mock('../../api/client');
 
 describe("App", () => {
     it("renders the initial instruction text", () => {

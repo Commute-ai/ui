@@ -11,6 +11,50 @@ jest.mock("expo-constants", () => ({
     },
 }));
 
+// Mock react-native's Platform and NativeModules
+jest.mock("react-native", () => {
+    const RN = jest.requireActual("react-native");
+    
+    // Ensure NativeModules exists
+    if (!RN.NativeModules) {
+        RN.NativeModules = {};
+    }
+    
+    // Mock DevMenu
+    RN.NativeModules.DevMenu = {
+        show: jest.fn(),
+        reload: jest.fn(),
+    };
+    
+    // Mock SettingsManager
+    RN.NativeModules.SettingsManager = {
+        settings: {
+            AppleLocale: "en-US",
+            AppleLanguages: ["en-US"],
+        },
+        getConstants: () => ({
+            settings: RN.NativeModules.SettingsManager.settings,
+        }),
+    };
+
+    return {
+        ...RN,
+        Platform: {
+            OS: "web",
+            select: jest.fn((obj) => obj.web || obj.default),
+        },
+        // Mock TurboModuleRegistry if needed
+        TurboModuleRegistry: {
+            getEnforcing: jest.fn((name) => {
+                if (name === 'DevMenu') {
+                    return RN.NativeModules.DevMenu;
+                }
+                return null;
+            }),
+        },
+    };
+});
+
 describe("Environment Configuration", () => {
     beforeEach(() => {
         // Reset the mock config
@@ -52,7 +96,9 @@ describe("Environment Configuration", () => {
         mockExpoConfig.updates.channel = "production";
         jest.isolateModules(() => {
             const config = require("../../config/environment").default;
-            expect(config.apiUrl).toBe("https://api.commute.ai/api/v1");
+            expect(config.apiUrl).toBe(
+                "https://backend.commute.ai.ender.fi/api/v1"
+            );
         });
     });
 

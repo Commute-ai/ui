@@ -9,6 +9,13 @@ import { Alert } from "react-native";
 
 // Import Alert
 
+jest.mock("../../config/environment", () => ({
+    __esModule: true,
+    default: {
+        apiUrl: "http://localhost:8000/api/v1",
+    },
+}));
+
 // Mock react-native's Alert module
 jest.mock("react-native", () => {
     const RN = jest.requireActual("react-native");
