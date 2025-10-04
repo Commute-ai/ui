@@ -1,8 +1,11 @@
 import { authApi } from "../api";
+// Import useContext
+import { AuthContext } from "../contexts/AuthContext.jsx";
 import storage from "../utils/storage";
 
-import React, { useContext } from "react"; // Import useContext
-import { AuthContext } from "../contexts/AuthContext.jsx"; // Import AuthContext
+import React, { useContext } from "react";
+
+// Import AuthContext
 
 import {
     ActivityIndicator,

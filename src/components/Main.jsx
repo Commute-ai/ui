@@ -1,11 +1,14 @@
+import { AuthContext, AuthProvider } from "../contexts/AuthContext.jsx";
+
 import React, { useContext } from "react";
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { Button, StyleSheet, Text, View } from "react-native";
+
 import LoginScreen from "./Login.jsx";
 import Registration from "./Registration.jsx";
-import { AuthProvider, AuthContext } from "../contexts/AuthContext.jsx";
 
 // Placeholder HomeScreen - you can replace this with your actual home screen content
 const HomeScreen = ({ navigation }) => {
@@ -54,7 +57,7 @@ function AppNavigator() {
                 options={{ title: "Register" }}
             />
         </Stack.Navigator>
-    )
+    );
 }
 
 export default function Main() {

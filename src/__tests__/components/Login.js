@@ -1,7 +1,7 @@
 import { authApi } from "../../api";
 import LoginScreen from "../../components/Login";
-import storage from "../../utils/storage";
 import { AuthProvider } from "../../contexts/AuthContext";
+import storage from "../../utils/storage";
 
 import React from "react";
 
