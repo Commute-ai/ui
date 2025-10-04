@@ -75,7 +75,7 @@ describe("Registration Component", () => {
         );
 
         expect(getByText("Create Account")).toBeTruthy();
-        expect(getByPlaceholderText("Email")).toBeTruthy();
+        expect(getByPlaceholderText("Username")).toBeTruthy();
         expect(getByPlaceholderText("Password")).toBeTruthy();
         expect(getByPlaceholderText("Confirm Password")).toBeTruthy();
         expect(getByText("Register")).toBeTruthy();
@@ -105,7 +105,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -129,7 +129,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -147,41 +147,6 @@ describe("Registration Component", () => {
         expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it("shows specific alert for invalid email format from API", async () => {
-        const errorResponse = {
-            detail: [
-                {
-                    msg: "This is not a valid email address, it must have an @-sign.",
-                },
-            ],
-        };
-        global.fetch.mockResolvedValueOnce({
-            ok: false,
-            status: 400,
-            text: () => Promise.resolve(JSON.stringify(errorResponse)),
-        });
-
-        const { getByPlaceholderText, getByText } = render(
-            <Registration navigation={mockNavigation} />
-        );
-
-        fireEvent.changeText(getByPlaceholderText("Email"), "invalidemail");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "password123"
-        );
-        fireEvent.press(getByText("Register"));
-
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Registration Failed",
-                "The email address you entered is not valid. Please ensure it includes an '@' symbol and a domain (e.g., user@example.com)."
-            );
-        });
-        expect(mockNavigation.navigate).not.toHaveBeenCalled();
-    });
-
     it("shows a generic issue alert for string detail from API", async () => {
         const errorResponse = {
             detail: "Some specific error occurred on the server.",
@@ -196,7 +161,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -225,7 +190,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -250,7 +215,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),

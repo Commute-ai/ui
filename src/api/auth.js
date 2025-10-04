@@ -7,12 +7,12 @@ import apiClient from "./client";
 const authApi = {
     /**
      * Register a new user
-     * @param {string} email - User's email address
+     * @param {string} username - User's username
      * @param {string} password - User's password
      * @returns {Promise<Object>} Registration response with access token
      */
-    async register(email, password) {
-        return apiClient.post("/auth/register", { email, password });
+    async register(username, password) {
+        return apiClient.post("/auth/register", { username, password });
     },
 
     /**
@@ -22,7 +22,7 @@ const authApi = {
      * @returns {Promise<Object>} Login response with access token
      */
     async login(email, password) {
-        return apiClient.post("/auth/login", { email, password });
+        return apiClient.post("/auth/login", { username: email, password });
     },
 
     /**
