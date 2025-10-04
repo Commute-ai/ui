@@ -82,7 +82,7 @@ describe("Registration Component", () => {
         expect(getByText("Back to Login")).toBeTruthy();
     });
 
-    it("navigates to Login screen on \"Back to Login\" press", () => {
+    it('navigates to Login screen on "Back to Login" press', () => {
         const { getByText } = render(
             <Registration navigation={mockNavigation} />
         );
