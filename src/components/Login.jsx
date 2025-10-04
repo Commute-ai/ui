@@ -1,7 +1,8 @@
 import { authApi } from "../api";
 import storage from "../utils/storage";
 
-import React from "react";
+import React, { useContext } from "react"; // Import useContext
+import { AuthContext } from "../contexts/AuthContext.jsx"; // Import AuthContext
 
 import {
     ActivityIndicator,
@@ -17,6 +18,7 @@ const LoginScreen = ({ navigation }) => {
     const [password, setPassword] = React.useState("");
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
+    const { setIsLoggedIn } = useContext(AuthContext); // Get setIsLoggedIn from context
 
     const handleLogin = async () => {
         // Clear previous error
@@ -41,6 +43,7 @@ const LoginScreen = ({ navigation }) => {
             // Store authentication token
             if (response.access_token) {
                 await storage.saveToken(response.access_token);
+                setIsLoggedIn(true); // Set logged in state to true
             }
 
             // Navigate to Home screen on success

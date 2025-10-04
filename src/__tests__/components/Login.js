@@ -1,6 +1,7 @@
 import { authApi } from "../../api";
 import LoginScreen from "../../components/Login";
 import storage from "../../utils/storage";
+import { AuthProvider } from "../../contexts/AuthContext";
 
 import React from "react";
 
@@ -17,6 +18,8 @@ jest.mock("../../utils/storage", () => ({
     __esModule: true,
     default: {
         saveToken: jest.fn(),
+        getToken: jest.fn(),
+        removeToken: jest.fn(),
     },
 }));
 
@@ -28,63 +31,62 @@ const mockNavigation = {
 describe("LoginScreen", () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        storage.getToken.mockResolvedValue(null);
     });
 
-    it("renders correctly and displays essential elements", () => {
-        const { getByTestId, getByPlaceholderText } = render(
-            <LoginScreen navigation={mockNavigation} />
+    it("renders correctly and displays essential elements", async () => {
+        const { findByTestId, findByPlaceholderText } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
 
-        // Check for title
-        expect(getByTestId("title")).toBeTruthy();
-
-        // Check for input fields
-        expect(getByPlaceholderText("Email")).toBeTruthy();
-        expect(getByPlaceholderText("Password")).toBeTruthy();
-
-        // Check for login button
-        expect(getByTestId("loginButton")).toBeTruthy();
+        expect(await findByTestId("title")).toBeTruthy();
+        expect(await findByPlaceholderText("Email")).toBeTruthy();
+        expect(await findByPlaceholderText("Password")).toBeTruthy();
+        expect(await findByTestId("loginButton")).toBeTruthy();
     });
 
     it("shows validation error when email is empty", async () => {
-        const { getByTestId } = render(
-            <LoginScreen navigation={mockNavigation} />
+        const { findByTestId } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
-        const loginButton = getByTestId("loginButton");
-
+        const loginButton = await findByTestId("loginButton");
         fireEvent.press(loginButton);
 
-        await waitFor(() => {
-            expect(getByTestId("errorMessage")).toBeTruthy();
-        });
+        expect(await findByTestId("errorMessage")).toBeTruthy();
     });
 
     it("shows validation error when password is empty", async () => {
-        const { getByTestId } = render(
-            <LoginScreen navigation={mockNavigation} />
+        const { findByTestId, findByPlaceholderText } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
-        const emailInput = getByTestId("emailInput");
-        const loginButton = getByTestId("loginButton");
+        const emailInput = await findByPlaceholderText("Email");
+        const loginButton = await findByTestId("loginButton");
 
         fireEvent.changeText(emailInput, "test@example.com");
         fireEvent.press(loginButton);
 
-        await waitFor(() => {
-            expect(getByTestId("errorMessage")).toBeTruthy();
-        });
+        expect(await findByTestId("errorMessage")).toBeTruthy();
     });
 
     it("calls authApi.login with correct credentials and navigates on success", async () => {
         const mockResponse = { access_token: "test-token-123" };
         authApi.login.mockResolvedValueOnce(mockResponse);
 
-        const { getByTestId } = render(
-            <LoginScreen navigation={mockNavigation} />
+        const { findByTestId, findByPlaceholderText } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
 
-        const emailInput = getByTestId("emailInput");
-        const passwordInput = getByTestId("passwordInput");
-        const loginButton = getByTestId("loginButton");
+        const emailInput = await findByPlaceholderText("Email");
+        const passwordInput = await findByPlaceholderText("Password");
+        const loginButton = await findByTestId("loginButton");
 
         fireEvent.changeText(emailInput, "test@example.com");
         fireEvent.changeText(passwordInput, "password123");
@@ -104,20 +106,22 @@ describe("LoginScreen", () => {
         const errorMessage = "Invalid credentials";
         authApi.login.mockRejectedValueOnce(new Error(errorMessage));
 
-        const { getByTestId } = render(
-            <LoginScreen navigation={mockNavigation} />
+        const { findByTestId, findByPlaceholderText } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
 
-        const emailInput = getByTestId("emailInput");
-        const passwordInput = getByTestId("passwordInput");
-        const loginButton = getByTestId("loginButton");
+        const emailInput = await findByPlaceholderText("Email");
+        const passwordInput = await findByPlaceholderText("Password");
+        const loginButton = await findByTestId("loginButton");
 
         fireEvent.changeText(emailInput, "test@example.com");
         fireEvent.changeText(passwordInput, "wrongpassword");
         fireEvent.press(loginButton);
 
-        await waitFor(() => {
-            const errorElement = getByTestId("errorMessage");
+        await waitFor(async () => {
+            const errorElement = await findByTestId("errorMessage");
             expect(errorElement).toBeTruthy();
             expect(errorElement.props.children).toBe(errorMessage);
         });
@@ -131,24 +135,22 @@ describe("LoginScreen", () => {
                 )
         );
 
-        const { getByTestId, queryByTestId } = render(
-            <LoginScreen navigation={mockNavigation} />
+        const { findByTestId, queryByTestId, findByPlaceholderText } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
 
-        const emailInput = getByTestId("emailInput");
-        const passwordInput = getByTestId("passwordInput");
-        const loginButton = getByTestId("loginButton");
+        const emailInput = await findByPlaceholderText("Email");
+        const passwordInput = await findByPlaceholderText("Password");
+        const loginButton = await findByTestId("loginButton");
 
         fireEvent.changeText(emailInput, "test@example.com");
         fireEvent.changeText(passwordInput, "password123");
         fireEvent.press(loginButton);
 
-        // Should show loading indicator
-        await waitFor(() => {
-            expect(getByTestId("loadingIndicator")).toBeTruthy();
-        });
+        expect(await findByTestId("loadingIndicator")).toBeTruthy();
 
-        // Should hide loading indicator after completion
         await waitFor(() => {
             expect(queryByTestId("loadingIndicator")).toBeNull();
         });
@@ -162,19 +164,20 @@ describe("LoginScreen", () => {
                 )
         );
 
-        const { getByTestId } = render(
-            <LoginScreen navigation={mockNavigation} />
+        const { findByTestId, findByPlaceholderText } = render(
+            <AuthProvider>
+                <LoginScreen navigation={mockNavigation} />
+            </AuthProvider>
         );
 
-        const emailInput = getByTestId("emailInput");
-        const passwordInput = getByTestId("passwordInput");
-        const loginButton = getByTestId("loginButton");
+        const emailInput = await findByPlaceholderText("Email");
+        const passwordInput = await findByPlaceholderText("Password");
+        const loginButton = await findByTestId("loginButton");
 
         fireEvent.changeText(emailInput, "test@example.com");
         fireEvent.changeText(passwordInput, "password123");
         fireEvent.press(loginButton);
 
-        // Should disable inputs during loading
         await waitFor(() => {
             expect(emailInput.props.editable).toBe(false);
             expect(passwordInput.props.editable).toBe(false);
