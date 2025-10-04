@@ -22,7 +22,7 @@ describe("Auth API", () => {
             );
 
             expect(apiClient.post).toHaveBeenCalledWith("/auth/register", {
-                email: "test@example.com",
+                username: "test@example.com",
                 password: "password123",
             });
             expect(result).toEqual(mockResponse);
@@ -49,7 +49,7 @@ describe("Auth API", () => {
             );
 
             expect(apiClient.post).toHaveBeenCalledWith("/auth/login", {
-                email: "test@example.com",
+                username: "test@example.com",
                 password: "password123",
             });
             expect(result).toEqual(mockResponse);

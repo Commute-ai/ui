@@ -45,7 +45,7 @@ jest.mock("react-native", () => {
         ...RN, // Spread the modified actualReactNative
         Alert: {
             ...(RN.Alert || {}), // Ensure RN.Alert exists before spreading
-            alert: jest.fn(), // This is the mock function we'''ll be checking
+            alert: jest.fn(), // This is the mock function we'll be checking
         },
         // If your tests or component rely on other react-native APIs that are not automatically mocked,
         // you might need to mock them here or ensure jest.requireActual covers them.
@@ -64,7 +64,7 @@ describe("Registration Component", () => {
         Alert.alert.mockClear(); // Clear the mocked Alert.alert
         global.fetch.mockClear(); // Clear fetch mock history and calls
         // Ensure any specific mock implementations are reset if necessary
-        // For example, if a test uses mockResolvedValueOnce, it'''s specific to that call.
+        // For example, if a test uses mockResolvedValueOnce, it's specific to that call.
         // If a default mock implementation was set, it might need resetting here.
         // global.fetch.mockImplementation(() => Promise.reject(new Error('default mock not implemented')));
     });
@@ -140,7 +140,7 @@ describe("Registration Component", () => {
         await waitFor(() => {
             expect(Alert.alert).toHaveBeenCalledWith(
                 "Error",
-                "Passwords don'''t match!"
+                "Passwords don't match!"
             );
         });
         expect(mockNavigation.navigate).not.toHaveBeenCalled();
@@ -201,7 +201,7 @@ describe("Registration Component", () => {
         await waitFor(() => {
             expect(Alert.alert).toHaveBeenCalledWith(
                 "Registration Failed",
-                "Could not understand the server'''s error message. The raw response for our developers is: " +
+                "Could not understand the server's error message. The raw response for our developers is: " +
                     rawErrorText
             );
         });

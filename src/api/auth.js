@@ -22,7 +22,7 @@ const authApi = {
      * @returns {Promise<Object>} Login response with access token
      */
     async login(email, password) {
-        return apiClient.post("/auth/login", { email, password });
+        return apiClient.post("/auth/login", { username: email, password });
     },
 
     /**
