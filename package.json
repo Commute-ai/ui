@@ -25,6 +25,7 @@
         "expo": "^54.0.10",
         "expo-constants": "^18.0.9",
         "expo-dev-client": "~6.0.12",
+        "expo-secure-store": "^15.0.7",
         "expo-status-bar": "~3.0.8",
         "expo-updates": "~29.0.11",
         "formik": "^2.4.2",
