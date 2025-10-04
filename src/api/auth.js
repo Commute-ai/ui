@@ -23,8 +23,8 @@ const authApi = {
      */
     async login(email, password) {
         const body = new URLSearchParams();
-        body.append('username', email);
-        body.append('password', password);
+        body.append("username", email);
+        body.append("password", password);
 
         return apiClient.request("/auth/login", {
             method: "POST",

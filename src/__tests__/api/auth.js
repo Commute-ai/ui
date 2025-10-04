@@ -50,8 +50,8 @@ describe("Auth API", () => {
             );
 
             const body = new URLSearchParams();
-            body.append('username', "test@example.com");
-            body.append('password', "password123");
+            body.append("username", "test@example.com");
+            body.append("password", "password123");
 
             expect(apiClient.request).toHaveBeenCalledWith("/auth/login", {
                 method: "POST",
