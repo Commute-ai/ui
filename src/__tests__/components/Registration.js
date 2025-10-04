@@ -45,7 +45,7 @@ jest.mock("react-native", () => {
         ...RN, // Spread the modified actualReactNative
         Alert: {
             ...(RN.Alert || {}), // Ensure RN.Alert exists before spreading
-            alert: jest.fn(), // This is the mock function we'll be checking
+            alert: jest.fn(), // This is the mock function we'''ll be checking
         },
         // If your tests or component rely on other react-native APIs that are not automatically mocked,
         // you might need to mock them here or ensure jest.requireActual covers them.
@@ -64,7 +64,7 @@ describe("Registration Component", () => {
         Alert.alert.mockClear(); // Clear the mocked Alert.alert
         global.fetch.mockClear(); // Clear fetch mock history and calls
         // Ensure any specific mock implementations are reset if necessary
-        // For example, if a test uses mockResolvedValueOnce, it's specific to that call.
+        // For example, if a test uses mockResolvedValueOnce, it'''s specific to that call.
         // If a default mock implementation was set, it might need resetting here.
         // global.fetch.mockImplementation(() => Promise.reject(new Error('default mock not implemented')));
     });
@@ -75,14 +75,14 @@ describe("Registration Component", () => {
         );
 
         expect(getByText("Create Account")).toBeTruthy();
-        expect(getByPlaceholderText("Email")).toBeTruthy();
+        expect(getByPlaceholderText("Username")).toBeTruthy();
         expect(getByPlaceholderText("Password")).toBeTruthy();
         expect(getByPlaceholderText("Confirm Password")).toBeTruthy();
         expect(getByText("Register")).toBeTruthy();
         expect(getByText("Back to Login")).toBeTruthy();
     });
 
-    it('navigates to Login screen on "Back to Login" press', () => {
+    it('''navigates to Login screen on "Back to Login" press''', () => {
         const { getByText } = render(
             <Registration navigation={mockNavigation} />
         );
@@ -105,7 +105,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -129,7 +129,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -140,46 +140,11 @@ describe("Registration Component", () => {
         await waitFor(() => {
             expect(Alert.alert).toHaveBeenCalledWith(
                 "Error",
-                "Passwords don't match!"
+                "Passwords don'''t match!"
             );
         });
         expect(mockNavigation.navigate).not.toHaveBeenCalled();
         expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    it("shows specific alert for invalid email format from API", async () => {
-        const errorResponse = {
-            detail: [
-                {
-                    msg: "This is not a valid email address, it must have an @-sign.",
-                },
-            ],
-        };
-        global.fetch.mockResolvedValueOnce({
-            ok: false,
-            status: 400,
-            text: () => Promise.resolve(JSON.stringify(errorResponse)),
-        });
-
-        const { getByPlaceholderText, getByText } = render(
-            <Registration navigation={mockNavigation} />
-        );
-
-        fireEvent.changeText(getByPlaceholderText("Email"), "invalidemail");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "password123"
-        );
-        fireEvent.press(getByText("Register"));
-
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Registration Failed",
-                "The email address you entered is not valid. Please ensure it includes an '@' symbol and a domain (e.g., user@example.com)."
-            );
-        });
-        expect(mockNavigation.navigate).not.toHaveBeenCalled();
     });
 
     it("shows a generic issue alert for string detail from API", async () => {
@@ -196,7 +161,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -225,7 +190,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),
@@ -236,7 +201,7 @@ describe("Registration Component", () => {
         await waitFor(() => {
             expect(Alert.alert).toHaveBeenCalledWith(
                 "Registration Failed",
-                "Could not understand the server's error message. The raw response for our developers is: " +
+                "Could not understand the server'''s error message. The raw response for our developers is: " +
                     rawErrorText
             );
         });
@@ -250,7 +215,7 @@ describe("Registration Component", () => {
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
+        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
         fireEvent.changeText(getByPlaceholderText("Password"), "password123");
         fireEvent.changeText(
             getByPlaceholderText("Confirm Password"),

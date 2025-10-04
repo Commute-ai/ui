@@ -5,7 +5,7 @@ import React from "react";
 import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Registration({ navigation }) {
-    const [email, setEmail] = React.useState("");
+    const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [confirmPassword, setConfirmPassword] = React.useState("");
 
@@ -16,7 +16,7 @@ export default function Registration({ navigation }) {
         }
 
         try {
-            await authApi.register(email, password);
+            await authApi.register(username, password);
             Alert.alert("Success", "Registration successful!");
             navigation.navigate("Login");
         } catch (error) {
@@ -39,10 +39,9 @@ export default function Registration({ navigation }) {
             <Text style={styles.title}>Create Account</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Email"
-                onChangeText={setEmail}
-                value={email}
-                keyboardType="email-address"
+                placeholder="Username"
+                onChangeText={setUsername}
+                value={username}
                 autoCapitalize="none"
             />
             <TextInput
