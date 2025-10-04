@@ -4,6 +4,7 @@ import apiClient from "../../api/client";
 // Mock the API client
 jest.mock("../../api/client", () => ({
     post: jest.fn(),
+    request: jest.fn(),
 }));
 
 describe("Auth API", () => {
@@ -39,18 +40,25 @@ describe("Auth API", () => {
     });
 
     describe("login", () => {
-        it("calls apiClient.post with correct endpoint and data", async () => {
+        it("calls apiClient.request with correct endpoint and data", async () => {
             const mockResponse = { access_token: "token123" };
-            apiClient.post.mockResolvedValueOnce(mockResponse);
+            apiClient.request.mockResolvedValueOnce(mockResponse);
 
             const result = await authApi.login(
                 "test@example.com",
                 "password123"
             );
 
-            expect(apiClient.post).toHaveBeenCalledWith("/auth/login", {
-                username: "test@example.com",
-                password: "password123",
+            const body = new URLSearchParams();
+            body.append('username', "test@example.com");
+            body.append('password', "password123");
+
+            expect(apiClient.request).toHaveBeenCalledWith("/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: body.toString(),
             });
             expect(result).toEqual(mockResponse);
         });
