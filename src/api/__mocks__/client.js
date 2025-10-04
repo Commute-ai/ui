@@ -13,7 +13,7 @@ class MockApiClient {
             return {
                 data: {
                     token: "mock-token",
-                    user: { id: 1, email: data.email },
+                    user: { id: 1, username: data.username },
                 },
             };
         }

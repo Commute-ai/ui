@@ -17,13 +17,13 @@ const authApi = {
 
     /**
      * Login a user
-     * @param {string} email - User's email address
+     * @param {string} username - User's username
      * @param {string} password - User's password
      * @returns {Promise<Object>} Login response with access token
      */
-    async login(email, password) {
+    async login(username, password) {
         const body = new URLSearchParams();
-        body.append("username", email);
+        body.append("username", username);
         body.append("password", password);
 
         return apiClient.request("/auth/login", {

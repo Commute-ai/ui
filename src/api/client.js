@@ -117,19 +117,9 @@ class ApiClient {
                     const serverMsg = firstError.msg;
                     console.log("Server error detail:", serverMsg);
 
-                    // Map common server errors to user-friendly messages
-                    if (
-                        serverMsg
-                            .toLowerCase()
-                            .includes("not a valid email address") &&
-                        serverMsg.toLowerCase().includes("@-sign")
-                    ) {
-                        message =
-                            "The email address you entered is not valid. Please ensure it includes an '@' symbol and a domain (e.g., user@example.com).";
-                    } else {
-                        message =
-                            "There was an issue with the information provided. Please review your details.";
-                    }
+                    // Generic error message
+                    message =
+                        "There was an issue with the information provided. Please review your details.";
                 }
             } else if (typeof errorJson.detail === "string") {
                 console.log("Server error detail string:", errorJson.detail);

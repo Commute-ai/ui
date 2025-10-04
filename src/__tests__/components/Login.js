@@ -42,12 +42,12 @@ describe("LoginScreen", () => {
         );
 
         expect(await findByTestId("title")).toBeTruthy();
-        expect(await findByPlaceholderText("Email")).toBeTruthy();
+        expect(await findByPlaceholderText("Username")).toBeTruthy();
         expect(await findByPlaceholderText("Password")).toBeTruthy();
         expect(await findByTestId("loginButton")).toBeTruthy();
     });
 
-    it("shows validation error when email is empty", async () => {
+    it("shows validation error when username is empty", async () => {
         const { findByTestId } = render(
             <AuthProvider>
                 <LoginScreen navigation={mockNavigation} />
@@ -65,10 +65,10 @@ describe("LoginScreen", () => {
                 <LoginScreen navigation={mockNavigation} />
             </AuthProvider>
         );
-        const emailInput = await findByPlaceholderText("Email");
+        const usernameInput = await findByPlaceholderText("Username");
         const loginButton = await findByTestId("loginButton");
 
-        fireEvent.changeText(emailInput, "test@example.com");
+        fireEvent.changeText(usernameInput, "testuser");
         fireEvent.press(loginButton);
 
         expect(await findByTestId("errorMessage")).toBeTruthy();
@@ -84,17 +84,17 @@ describe("LoginScreen", () => {
             </AuthProvider>
         );
 
-        const emailInput = await findByPlaceholderText("Email");
+        const usernameInput = await findByPlaceholderText("Username");
         const passwordInput = await findByPlaceholderText("Password");
         const loginButton = await findByTestId("loginButton");
 
-        fireEvent.changeText(emailInput, "test@example.com");
+        fireEvent.changeText(usernameInput, "testuser");
         fireEvent.changeText(passwordInput, "password123");
         fireEvent.press(loginButton);
 
         await waitFor(() => {
             expect(authApi.login).toHaveBeenCalledWith(
-                "test@example.com",
+                "testuser",
                 "password123"
             );
             expect(storage.saveToken).toHaveBeenCalledWith("test-token-123");
@@ -112,11 +112,11 @@ describe("LoginScreen", () => {
             </AuthProvider>
         );
 
-        const emailInput = await findByPlaceholderText("Email");
+        const usernameInput = await findByPlaceholderText("Username");
         const passwordInput = await findByPlaceholderText("Password");
         const loginButton = await findByTestId("loginButton");
 
-        fireEvent.changeText(emailInput, "test@example.com");
+        fireEvent.changeText(usernameInput, "testuser");
         fireEvent.changeText(passwordInput, "wrongpassword");
         fireEvent.press(loginButton);
 
@@ -141,11 +141,11 @@ describe("LoginScreen", () => {
             </AuthProvider>
         );
 
-        const emailInput = await findByPlaceholderText("Email");
+        const usernameInput = await findByPlaceholderText("Username");
         const passwordInput = await findByPlaceholderText("Password");
         const loginButton = await findByTestId("loginButton");
 
-        fireEvent.changeText(emailInput, "test@example.com");
+        fireEvent.changeText(usernameInput, "testuser");
         fireEvent.changeText(passwordInput, "password123");
         fireEvent.press(loginButton);
 
@@ -170,16 +170,16 @@ describe("LoginScreen", () => {
             </AuthProvider>
         );
 
-        const emailInput = await findByPlaceholderText("Email");
+        const usernameInput = await findByPlaceholderText("Username");
         const passwordInput = await findByPlaceholderText("Password");
         const loginButton = await findByTestId("loginButton");
 
-        fireEvent.changeText(emailInput, "test@example.com");
+        fireEvent.changeText(usernameInput, "testuser");
         fireEvent.changeText(passwordInput, "password123");
         fireEvent.press(loginButton);
 
         await waitFor(() => {
-            expect(emailInput.props.editable).toBe(false);
+            expect(usernameInput.props.editable).toBe(false);
             expect(passwordInput.props.editable).toBe(false);
         });
     });

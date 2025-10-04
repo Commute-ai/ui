@@ -17,7 +17,7 @@ import {
 } from "react-native";
 
 const LoginScreen = ({ navigation }) => {
-    const [email, setEmail] = React.useState("");
+    const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
@@ -28,8 +28,8 @@ const LoginScreen = ({ navigation }) => {
         setError("");
 
         // Basic validation
-        if (!email.trim()) {
-            setError("Please enter your email");
+        if (!username.trim()) {
+            setError("Please enter your username");
             return;
         }
         if (!password.trim()) {
@@ -41,7 +41,7 @@ const LoginScreen = ({ navigation }) => {
 
         try {
             // Call backend login API
-            const response = await authApi.login(email, password);
+            const response = await authApi.login(username, password);
 
             // Store authentication token
             if (response.access_token) {
@@ -65,14 +65,14 @@ const LoginScreen = ({ navigation }) => {
                 Login
             </Text>
             <TextInput
-                placeholder="Email"
+                placeholder="Username"
                 style={styles.input}
-                onChangeText={setEmail}
-                value={email}
+                onChangeText={setUsername}
+                value={username}
                 autoCapitalize="none"
-                keyboardType="email-address"
+                keyboardType="default"
                 editable={!loading}
-                testID="emailInput"
+                testID="usernameInput"
             />
             <TextInput
                 placeholder="Password"
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         padding: 16,
-        backgroundColor: "#fff", // Or your app\'s background color
+        backgroundColor: "#fff", // Or your app's background color
     },
     title: {
         fontSize: 24,
