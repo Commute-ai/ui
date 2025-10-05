@@ -67,7 +67,7 @@ The API client automatically converts server errors into user-friendly messages:
 
 ```javascript
 try {
-    await apiClient.post("/auth/register", { email, password });
+    await apiClient.post("/auth/register", { username, password });
 } catch (error) {
     // error.message contains a user-friendly error message
     Alert.alert("Error", error.message);
@@ -83,14 +83,14 @@ import { authApi } from "./api";
 
 // Register a new user
 try {
-    const response = await authApi.register(email, password);
+    const response = await authApi.register(username, password);
     // Handle successful registration
 } catch (error) {
     // Handle error
 }
 
 // Login
-const response = await authApi.login(email, password);
+const response = await authApi.login(username, password);
 
 // Logout
 await authApi.logout();
@@ -108,12 +108,12 @@ import React from "react";
 import { Alert } from "react-native";
 
 export default function Registration({ navigation }) {
-    const [email, setEmail] = React.useState("");
+    const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
 
     const handleRegister = async () => {
         try {
-            await authApi.register(email, password);
+            await authApi.register(username, password);
             Alert.alert("Success", "Registration successful!");
             navigation.navigate("Login");
         } catch (error) {
@@ -162,7 +162,7 @@ The API client provides automatic error handling with user-friendly messages:
 
 The client parses server error responses and converts them to friendly messages:
 
-- **Invalid email format**: "The email address you entered is not valid..."
+- **Invalid username format**: "The username you entered is not valid..."
 - **Generic validation error**: "There was an issue with the information provided..."
 - **Non-JSON error response**: Includes raw server response for debugging
 

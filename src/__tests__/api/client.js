@@ -49,7 +49,7 @@ describe("API Client", () => {
         it("makes a successful POST request", async () => {
             const mockData = { success: true };
             const postData = {
-                email: "test@example.com",
+                username: "testuser",
                 password: "password123",
             };
 
@@ -73,11 +73,11 @@ describe("API Client", () => {
             expect(result).toEqual(mockData);
         });
 
-        it("throws user-friendly error for invalid email from server", async () => {
+        it("throws user-friendly error for invalid username from server", async () => {
             const errorResponse = {
                 detail: [
                     {
-                        msg: "This is not a valid email address, it must have an @-sign.",
+                        msg: "This is not a valid username",
                     },
                 ],
             };
@@ -89,7 +89,7 @@ describe("API Client", () => {
             });
 
             await expect(testClient.post("/auth/register", {})).rejects.toThrow(
-                "The email address you entered is not valid. Please ensure it includes an '@' symbol and a domain (e.g., user@example.com)."
+                "There was an issue with the information provided. Please review your details."
             );
         });
 

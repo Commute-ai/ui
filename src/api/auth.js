@@ -17,12 +17,22 @@ const authApi = {
 
     /**
      * Login a user
-     * @param {string} email - User's email address
+     * @param {string} username - User's username
      * @param {string} password - User's password
      * @returns {Promise<Object>} Login response with access token
      */
-    async login(email, password) {
-        return apiClient.post("/auth/login", { username: email, password });
+    async login(username, password) {
+        const body = new URLSearchParams();
+        body.append("username", username);
+        body.append("password", password);
+
+        return apiClient.request("/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: body.toString(),
+        });
     },
 
     /**

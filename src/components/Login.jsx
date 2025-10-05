@@ -1,17 +1,62 @@
-import React from "react";
+import { authApi } from "../api";
+// Import useContext
+import { AuthContext } from "../contexts/AuthContext.jsx";
+import storage from "../utils/storage";
 
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useContext } from "react";
+
+// Import AuthContext
+
+import {
+    ActivityIndicator,
+    Button,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+} from "react-native";
 
 const LoginScreen = ({ navigation }) => {
-    // Add state for username and password if needed
-    // const [username, setUsername] = React.useState('');
-    // const [password, setPassword] = React.useState('');
+    const [username, setUsername] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState("");
+    const { setIsLoggedIn } = useContext(AuthContext); // Get setIsLoggedIn from context
 
-    const handleLogin = () => {
-        // Implement your login logic here
-        // For now, let's navigate to a hypothetical 'Home' screen
-        // navigation.navigate('Home');
-        console.log("Login button pressed");
+    const handleLogin = async () => {
+        // Clear previous error
+        setError("");
+
+        // Basic validation
+        if (!username.trim()) {
+            setError("Please enter your username");
+            return;
+        }
+        if (!password.trim()) {
+            setError("Please enter your password");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Call backend login API
+            const response = await authApi.login(username, password);
+
+            // Store authentication token
+            if (response.access_token) {
+                await storage.saveToken(response.access_token);
+                setIsLoggedIn(true); // Set logged in state to true
+            }
+
+            // Navigate to Home screen on success
+            navigation.navigate("Home");
+        } catch (err) {
+            // Display error message to user
+            setError(err.message || "Login failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -22,22 +67,44 @@ const LoginScreen = ({ navigation }) => {
             <TextInput
                 placeholder="Username"
                 style={styles.input}
-                // onChangeText={setUsername}
-                // value={username}
+                onChangeText={setUsername}
+                value={username}
                 autoCapitalize="none"
+                keyboardType="default"
+                editable={!loading}
+                testID="usernameInput"
             />
             <TextInput
                 placeholder="Password"
                 style={styles.input}
                 secureTextEntry
-                // onChangeText={setPassword}
-                // value={password}
+                onChangeText={setPassword}
+                value={password}
+                editable={!loading}
+                testID="passwordInput"
             />
-            <Button title="Login" onPress={handleLogin} testID="loginButton" />
-            {/* Example: Add a button to navigate to a registration screen */}
+            {error ? (
+                <Text style={styles.errorText} testID="errorMessage">
+                    {error}
+                </Text>
+            ) : null}
+            {loading ? (
+                <ActivityIndicator
+                    size="large"
+                    color="#0000ff"
+                    testID="loadingIndicator"
+                />
+            ) : (
+                <Button
+                    title="Login"
+                    onPress={handleLogin}
+                    testID="loginButton"
+                />
+            )}
             <Button
                 title="Don't have an account? Sign Up"
-                onPress={() => navigation.navigate("Register")} // Assuming you have a 'Register' screen
+                onPress={() => navigation.navigate("Register")}
+                disabled={loading}
             />
         </View>
     );
@@ -49,7 +116,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         padding: 16,
-        backgroundColor: "#fff", // Or your app\'s background color
+        backgroundColor: "#fff", // Or your app's background color
     },
     title: {
         fontSize: 24,
@@ -64,6 +131,11 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         paddingHorizontal: 8,
         borderRadius: 4,
+    },
+    errorText: {
+        color: "red",
+        marginBottom: 12,
+        textAlign: "center",
     },
 });
 
