@@ -1,20 +1,22 @@
+import { ApiError } from "../../api/client";
+
 // Mock fetch globally before any imports
 global.fetch = jest.fn();
 
 // Mock the config module before importing anything
 jest.mock("../../config/environment", () => ({
-    apiUrl: "http://localhost:8000/api/v1",
+    default: {
+        apiUrl: "http://localhost:8000/api/v1",
+    },
 }));
 
 describe("API Client", () => {
-    // Import ApiClient class directly and create instance for testing
     let ApiClient;
     let testClient;
 
     beforeAll(() => {
         // Dynamically import the module after mocks are set
         const clientModule = require("../../api/client");
-        // Get the class from the module
         ApiClient = clientModule.default.constructor;
         testClient = new ApiClient("http://localhost:8000/api/v1");
     });
@@ -24,12 +26,16 @@ describe("API Client", () => {
         jest.clearAllMocks();
     });
 
-    describe("request method", () => {
-        it("makes a successful GET request", async () => {
+    describe("successful requests", () => {
+        it("makes a successful GET request with JSON response", async () => {
             const mockData = { id: 1, name: "Test" };
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                text: () => Promise.resolve(JSON.stringify(mockData)),
+                headers: {
+                    get: (header) =>
+                        header === "content-type" ? "application/json" : null,
+                },
+                json: () => Promise.resolve(mockData),
             });
 
             const result = await testClient.get("/test");
@@ -40,6 +46,7 @@ describe("API Client", () => {
                     method: "GET",
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
+                        Accept: "application/json",
                     }),
                 })
             );
@@ -48,14 +55,14 @@ describe("API Client", () => {
 
         it("makes a successful POST request", async () => {
             const mockData = { success: true };
-            const postData = {
-                username: "testuser",
-                password: "password123",
-            };
+            const postData = { username: "testuser", password: "password123" };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                text: () => Promise.resolve(JSON.stringify(mockData)),
+                headers: {
+                    get: () => "application/json",
+                },
+                json: () => Promise.resolve(mockData),
             });
 
             const result = await testClient.post("/auth/register", postData);
@@ -73,87 +80,155 @@ describe("API Client", () => {
             expect(result).toEqual(mockData);
         });
 
-        it("throws user-friendly error for invalid username from server", async () => {
+        it("handles text responses when content-type is not JSON", async () => {
+            const textResponse = "Plain text response";
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                headers: {
+                    get: () => "text/plain",
+                },
+                text: () => Promise.resolve(textResponse),
+            });
+
+            const result = await testClient.get("/test");
+            expect(result).toBe(textResponse);
+        });
+    });
+
+    describe("error handling", () => {
+        it("throws ApiError with validation errors (422)", async () => {
             const errorResponse = {
                 detail: [
-                    {
-                        msg: "This is not a valid username",
-                    },
+                    { msg: "Username is required" },
+                    { msg: "Password must be at least 6 characters" },
                 ],
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: false,
-                status: 400,
+                status: 422,
+                headers: {
+                    get: (header) =>
+                        header === "content-type" ? "application/json" : null,
+                },
                 text: () => Promise.resolve(JSON.stringify(errorResponse)),
             });
 
-            await expect(testClient.post("/auth/register", {})).rejects.toThrow(
-                "There was an issue with the information provided. Please review your details."
-            );
+            try {
+                await testClient.post("/auth/register", {});
+                expect(true).toBe(false);
+            } catch (error) {
+                expect(error).toBeInstanceOf(ApiError);
+                expect(error.message).toBe(
+                    "Username is required. Password must be at least 6 characters"
+                );
+                expect(error.code).toBe("VALIDATION_ERROR");
+                expect(error.statusCode).toBe(422);
+            }
         });
 
-        it("throws user-friendly error for string detail from server", async () => {
+        it("throws ApiError with string detail", async () => {
             const errorResponse = {
-                detail: "Some specific error occurred on the server.",
+                detail: "Username already exists",
             };
 
             global.fetch.mockResolvedValueOnce({
                 ok: false,
-                status: 400,
+                status: 409,
+                headers: { get: () => null },
                 text: () => Promise.resolve(JSON.stringify(errorResponse)),
             });
 
-            await expect(testClient.post("/auth/register", {})).rejects.toThrow(
-                "Registration failed due to an issue with the provided data. Please try again."
-            );
+            try {
+                await testClient.post("/auth/register", {});
+            } catch (error) {
+                expect(error).toBeInstanceOf(ApiError);
+                expect(error.message).toBe("Username already exists");
+                expect(error.code).toBe("CONFLICT");
+                expect(error.statusCode).toBe(409);
+            }
         });
 
-        it("throws error with raw response when server returns non-JSON", async () => {
-            const rawErrorText = "Internal Server Error - Not JSON";
+        it("throws ApiError with default message for known status codes", async () => {
+            global.fetch.mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+                headers: { get: () => null },
+                text: () => Promise.resolve(JSON.stringify({})),
+            });
 
+            try {
+                await testClient.get("/protected");
+            } catch (error) {
+                expect(error).toBeInstanceOf(ApiError);
+                expect(error.message).toBe(
+                    "Authentication failed. Please check your credentials."
+                );
+                expect(error.code).toBe("UNAUTHORIZED");
+                expect(error.statusCode).toBe(401);
+            }
+        });
+
+        it("throws ApiError when server returns non-JSON error", async () => {
             global.fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
-                text: () => Promise.resolve(rawErrorText),
+                headers: { get: () => null },
+                text: () => Promise.resolve("Internal Server Error"),
             });
 
-            await expect(testClient.post("/auth/register", {})).rejects.toThrow(
-                "Could not understand the server's error message. The raw response for our developers is: " +
-                    rawErrorText
-            );
+            try {
+                await testClient.get("/test");
+            } catch (error) {
+                expect(error).toBeInstanceOf(ApiError);
+                expect(error.message).toBe(
+                    "Server error (500). Please try again later."
+                );
+                expect(error.code).toBe("SERVER_ERROR");
+                expect(error.statusCode).toBe(500);
+            }
         });
 
-        it("throws network error when fetch fails", async () => {
-            global.fetch.mockRejectedValueOnce(
-                new Error("Network request failed")
-            );
+        it("throws ApiError for network failures", async () => {
+            const networkError = new TypeError("Failed to fetch");
+            global.fetch.mockRejectedValueOnce(networkError);
 
-            await expect(testClient.post("/auth/register", {})).rejects.toThrow(
-                "Could not connect to the server. Please check your network connection."
-            );
+            try {
+                await testClient.post("/auth/register", {});
+            } catch (error) {
+                expect(error).toBeInstanceOf(ApiError);
+                expect(error.message).toBe(
+                    "Network error. Please check your connection."
+                );
+                expect(error.code).toBe("NETWORK_ERROR");
+            }
         });
 
-        it("throws error when success response is not valid JSON", async () => {
-            global.fetch.mockResolvedValueOnce({
-                ok: true,
-                text: () => Promise.resolve("Not valid JSON"),
-            });
+        it("throws ApiError for unexpected errors", async () => {
+            const unexpectedError = new Error("Something weird happened");
+            global.fetch.mockRejectedValueOnce(unexpectedError);
 
-            await expect(testClient.get("/test")).rejects.toThrow(
-                "Received an invalid data format from the server."
-            );
+            try {
+                await testClient.get("/test");
+            } catch (error) {
+                expect(error).toBeInstanceOf(ApiError);
+                expect(error.message).toBe(
+                    "Something went wrong. Please try again."
+                );
+                expect(error.code).toBe("UNKNOWN_ERROR");
+            }
         });
     });
 
-    describe("helper methods", () => {
+    describe("convenience methods", () => {
         it("PUT request works correctly", async () => {
             const mockData = { success: true };
             const putData = { name: "Updated Name" };
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                text: () => Promise.resolve(JSON.stringify(mockData)),
+                headers: { get: () => "application/json" },
+                json: () => Promise.resolve(mockData),
             });
 
             const result = await testClient.put("/users/1", putData);
@@ -173,7 +248,8 @@ describe("API Client", () => {
 
             global.fetch.mockResolvedValueOnce({
                 ok: true,
-                text: () => Promise.resolve(JSON.stringify(mockData)),
+                headers: { get: () => "application/json" },
+                json: () => Promise.resolve(mockData),
             });
 
             const result = await testClient.delete("/users/1");
@@ -185,6 +261,27 @@ describe("API Client", () => {
                 })
             );
             expect(result).toEqual(mockData);
+        });
+    });
+
+    describe("ApiError class", () => {
+        it("creates ApiError with all properties", () => {
+            const error = new ApiError("Test error", "TEST_CODE", 400);
+
+            expect(error).toBeInstanceOf(Error);
+            expect(error).toBeInstanceOf(ApiError);
+            expect(error.name).toBe("ApiError");
+            expect(error.message).toBe("Test error");
+            expect(error.code).toBe("TEST_CODE");
+            expect(error.statusCode).toBe(400);
+        });
+
+        it("creates ApiError without statusCode", () => {
+            const error = new ApiError("Test error", "TEST_CODE");
+
+            expect(error.message).toBe("Test error");
+            expect(error.code).toBe("TEST_CODE");
+            expect(error.statusCode).toBeNull();
         });
     });
 });

@@ -1,179 +1,208 @@
 import config from "../config/environment";
 
 /**
- * API Client for backend communication
- * Provides a clean, modular interface for all API calls
+ * Centralized API client with clean error handling
+ * Follows single responsibility principle
  */
 class ApiClient {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
+        this.defaultHeaders = {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        };
     }
 
     /**
-     * Make a generic API request
-     * @param {string} endpoint - API endpoint (without base URL)
-     * @param {Object} options - Fetch options (method, headers, body, etc.)
-     * @returns {Promise<Object>} Response data
-     * @throws {Error} API error with user-friendly message
+     * Main request method
+     * Simplified error handling - just parse and throw
      */
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
+
         const config = {
+            ...options,
             headers: {
-                "Content-Type": "application/json",
+                ...this.defaultHeaders,
                 ...options.headers,
             },
-            ...options,
         };
 
         try {
             const response = await fetch(url, config);
-            const responseText = await response.text();
 
+            // Handle non-2xx responses
             if (!response.ok) {
-                // Handle HTTP errors
-                console.error("API request failed. Status:", response.status);
-                console.error("Raw server response:", responseText);
-
-                try {
-                    const errorJson = JSON.parse(responseText);
-                    throw this._createUserFriendlyError(
-                        errorJson,
-                        response.status
-                    );
-                } catch (parseError) {
-                    if (parseError.userFriendly) {
-                        // Re-throw our custom error
-                        throw parseError;
-                    }
-                    // JSON parse failed
-                    console.error(
-                        "Failed to parse server error response JSON:",
-                        parseError
-                    );
-                    const error = new Error(
-                        "Could not understand the server's error message. The raw response for our developers is: " +
-                            responseText
-                    );
-                    error.userFriendly = true;
-                    throw error;
-                }
+                await this._handleErrorResponse(response);
             }
 
-            // Success - parse and return the response
-            try {
-                return JSON.parse(responseText);
-            } catch (parseError) {
-                console.error(
-                    "Failed to parse success response JSON:",
-                    parseError
-                );
-                const error = new Error(
-                    "Received an invalid data format from the server."
-                );
-                error.userFriendly = true;
-                throw error;
+            // Parse successful response
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                return await response.json();
             }
+
+            return await response.text();
         } catch (error) {
-            // Handle network errors and other exceptions
-            if (error.userFriendly) {
-                // Already a user-friendly error, re-throw it
+            // Handle network errors
+            if (
+                error.name === "TypeError" &&
+                error.message.includes("Failed to fetch")
+            ) {
+                throw new ApiError(
+                    "Network error. Please check your connection.",
+                    "NETWORK_ERROR"
+                );
+            }
+
+            // Re-throw ApiErrors as-is
+            if (error instanceof ApiError) {
                 throw error;
             }
 
-            console.error("API request error:", error);
-
-            if (error instanceof SyntaxError) {
-                throw new Error(
-                    "Received an invalid data format from the server."
-                );
-            } else if (
-                error.message &&
-                error.message.toLowerCase().includes("network request failed")
-            ) {
-                throw new Error(
-                    "Could not connect to the server. Please check your network connection."
-                );
-            }
-
-            throw new Error("An unexpected error occurred. Please try again.");
+            // Unexpected errors
+            console.error("Unexpected API error:", error);
+            throw new ApiError(
+                "Something went wrong. Please try again.",
+                "UNKNOWN_ERROR"
+            );
         }
     }
 
     /**
-     * Create a user-friendly error from server response
+     * Handle error responses from server
      * @private
      */
-    _createUserFriendlyError(errorJson, statusCode) {
-        let message = "An error occurred. Please try again.";
+    async _handleErrorResponse(response) {
+        let errorData;
 
-        if (errorJson.detail) {
-            if (
-                Array.isArray(errorJson.detail) &&
-                errorJson.detail.length > 0
-            ) {
-                const firstError = errorJson.detail[0];
-                if (firstError && typeof firstError.msg === "string") {
-                    const serverMsg = firstError.msg;
-                    console.log("Server error detail:", serverMsg);
-
-                    // Generic error message
-                    message =
-                        "There was an issue with the information provided. Please review your details.";
-                }
-            } else if (typeof errorJson.detail === "string") {
-                console.log("Server error detail string:", errorJson.detail);
-                message =
-                    "Registration failed due to an issue with the provided data. Please try again.";
-            }
+        try {
+            const text = await response.text();
+            errorData = text ? JSON.parse(text) : {};
+        } catch {
+            // Non-JSON error response
+            throw new ApiError(
+                `Server error (${response.status}). Please try again later.`,
+                "SERVER_ERROR",
+                response.status
+            );
         }
 
-        const error = new Error(message);
-        error.userFriendly = true;
-        error.statusCode = statusCode;
-        return error;
+        // Extract error message from various formats
+        const message = this._extractErrorMessage(errorData, response.status);
+        throw new ApiError(
+            message,
+            this._getErrorCode(response.status),
+            response.status
+        );
     }
 
     /**
-     * POST request helper
+     * Extract user-friendly error message from server response
+     * @private
      */
-    async post(endpoint, data) {
+    _extractErrorMessage(errorData, statusCode) {
+        // Handle FastAPI validation errors
+        if (Array.isArray(errorData.detail)) {
+            const errors = errorData.detail
+                .map((err) => err.msg || err.message)
+                .filter(Boolean);
+            return errors.length > 0
+                ? errors.join(". ")
+                : "Invalid request data.";
+        }
+
+        // Handle string detail
+        if (typeof errorData.detail === "string") {
+            return errorData.detail;
+        }
+
+        // Handle message field
+        if (errorData.message) {
+            return errorData.message;
+        }
+
+        // Default messages by status code
+        return this._getDefaultErrorMessage(statusCode);
+    }
+
+    /**
+     * Get default error message by status code
+     * @private
+     */
+    _getDefaultErrorMessage(statusCode) {
+        const messages = {
+            400: "Invalid request. Please check your input.",
+            401: "Authentication failed. Please check your credentials.",
+            403: "Access denied.",
+            404: "Resource not found.",
+            409: "This resource already exists.",
+            422: "Invalid data provided.",
+            500: "Server error. Please try again later.",
+            503: "Service unavailable. Please try again later.",
+        };
+
+        return (
+            messages[statusCode] || `Request failed with status ${statusCode}.`
+        );
+    }
+
+    /**
+     * Get error code by status
+     * @private
+     */
+    _getErrorCode(statusCode) {
+        const codes = {
+            400: "BAD_REQUEST",
+            401: "UNAUTHORIZED",
+            403: "FORBIDDEN",
+            404: "NOT_FOUND",
+            409: "CONFLICT",
+            422: "VALIDATION_ERROR",
+            500: "SERVER_ERROR",
+            503: "SERVICE_UNAVAILABLE",
+        };
+
+        return codes[statusCode] || "HTTP_ERROR";
+    }
+
+    // Convenience methods
+    async get(endpoint, options = {}) {
+        return this.request(endpoint, { ...options, method: "GET" });
+    }
+
+    async post(endpoint, data, options = {}) {
         return this.request(endpoint, {
+            ...options,
             method: "POST",
             body: JSON.stringify(data),
         });
     }
 
-    /**
-     * GET request helper
-     */
-    async get(endpoint) {
+    async put(endpoint, data, options = {}) {
         return this.request(endpoint, {
-            method: "GET",
-        });
-    }
-
-    /**
-     * PUT request helper
-     */
-    async put(endpoint, data) {
-        return this.request(endpoint, {
+            ...options,
             method: "PUT",
             body: JSON.stringify(data),
         });
     }
 
-    /**
-     * DELETE request helper
-     */
-    async delete(endpoint) {
-        return this.request(endpoint, {
-            method: "DELETE",
-        });
+    async delete(endpoint, options = {}) {
+        return this.request(endpoint, { ...options, method: "DELETE" });
     }
 }
 
-// Create and export a singleton instance
-const apiClient = new ApiClient(config.apiUrl);
+/**
+ * Custom error class for API errors
+ */
+export class ApiError extends Error {
+    constructor(message, code, statusCode = null) {
+        super(message);
+        this.name = "ApiError";
+        this.code = code;
+        this.statusCode = statusCode;
+    }
+}
 
+const apiClient = new ApiClient(config.apiUrl);
 export default apiClient;

@@ -1,13 +1,16 @@
-// Added waitFor
-import Registration from "../../../src/components/Registration";
+import { authApi } from "../../api";
+import Registration from "../../components/Registration";
 
 import React from "react";
 
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
-// Adjusted path to component
-import { Alert } from "react-native";
 
-// Import Alert
+// Mock the authApi
+jest.mock("../../api", () => ({
+    authApi: {
+        register: jest.fn(),
+    },
+}));
 
 jest.mock("../../config/environment", () => ({
     __esModule: true,
@@ -16,219 +19,279 @@ jest.mock("../../config/environment", () => ({
     },
 }));
 
-// Mock react-native's Alert module
-jest.mock("react-native", () => {
-    const RN = jest.requireActual("react-native");
-
-    // Ensure NativeModules exists and add a stub for DevMenu
-    if (!RN.NativeModules) {
-        RN.NativeModules = {};
-    }
-    RN.NativeModules.DevMenu = {
-        // You can add jest.fn() for any methods that DevMenu might be expected to have
-        // e.g., addListener: jest.fn(), removeListeners: jest.fn(), show: jest.fn(), etc.
-        // For now, an empty object might be sufficient to resolve the "could not be found" error.
-    };
-    RN.NativeModules.SettingsManager = {
-        settings: {
-            AppleLocale: "en-US",
-            AppleLanguages: ["en-US"],
-        },
-        getConstants: () => ({
-            settings: RN.NativeModules.SettingsManager.settings,
-        }),
-        setValues: jest.fn(),
-        deleteValues: jest.fn(),
-    };
-
-    return {
-        ...RN, // Spread the modified actualReactNative
-        Alert: {
-            ...(RN.Alert || {}), // Ensure RN.Alert exists before spreading
-            alert: jest.fn(), // This is the mock function we'll be checking
-        },
-        // If your tests or component rely on other react-native APIs that are not automatically mocked,
-        // you might need to mock them here or ensure jest.requireActual covers them.
-    };
-});
-
-// Mock global fetch
-global.fetch = jest.fn(); // Mock fetch globally
+// Mock navigation prop
+const mockNavigation = {
+    navigate: jest.fn(),
+};
 
 describe("Registration Component", () => {
-    const mockNavigation = { navigate: jest.fn() };
-
     beforeEach(() => {
-        // Reset mocks before each test
-        mockNavigation.navigate.mockClear();
-        Alert.alert.mockClear(); // Clear the mocked Alert.alert
-        global.fetch.mockClear(); // Clear fetch mock history and calls
-        // Ensure any specific mock implementations are reset if necessary
-        // For example, if a test uses mockResolvedValueOnce, it's specific to that call.
-        // If a default mock implementation was set, it might need resetting here.
-        // global.fetch.mockImplementation(() => Promise.reject(new Error('default mock not implemented')));
+        jest.clearAllMocks();
     });
 
-    it("renders create account title, input fields, and buttons", () => {
-        const { getByText, getByPlaceholderText } = render(
+    it("renders create account title, input fields, and buttons", async () => {
+        const { findByText, findByPlaceholderText, findByTestId } = render(
             <Registration navigation={mockNavigation} />
         );
 
-        expect(getByText("Create Account")).toBeTruthy();
-        expect(getByPlaceholderText("Username")).toBeTruthy();
-        expect(getByPlaceholderText("Password")).toBeTruthy();
-        expect(getByPlaceholderText("Confirm Password")).toBeTruthy();
-        expect(getByText("Register")).toBeTruthy();
-        expect(getByText("Back to Login")).toBeTruthy();
+        expect(await findByText("Create Account")).toBeTruthy();
+        expect(await findByPlaceholderText("Username")).toBeTruthy();
+        expect(await findByPlaceholderText("Password")).toBeTruthy();
+        expect(await findByPlaceholderText("Confirm Password")).toBeTruthy();
+        expect(await findByTestId("registerButton")).toBeTruthy();
+        expect(await findByText("Back to Login")).toBeTruthy();
     });
 
-    it('navigates to Login screen on "Back to Login" press', () => {
-        const { getByText } = render(
+    it('navigates to Login screen on "Back to Login" press', async () => {
+        const { findByText } = render(
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.press(getByText("Back to Login"));
+        const backButton = await findByText("Back to Login");
+        fireEvent.press(backButton);
+
         expect(mockNavigation.navigate).toHaveBeenCalledWith("Login");
     });
 
-    it("handles successful registration and navigates to Login", async () => {
-        // Setup mock for successful fetch
-        global.fetch.mockResolvedValueOnce({
-            ok: true,
-            text: () =>
-                Promise.resolve(
-                    JSON.stringify({ message: "Registration successful" })
-                ), // The component parses this
-        });
-
-        const { getByPlaceholderText, getByText } = render(
+    it("shows validation error if passwords don't match", async () => {
+        const { findByPlaceholderText, findByTestId } = render(
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "password123"
-        );
-        fireEvent.press(getByText("Register"));
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
 
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Success",
-                "Registration successful!"
-            );
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "differentPassword");
+        fireEvent.press(registerButton);
+
+        const errorText = await findByTestId("errorMessage");
+        expect(errorText.props.children).toBe("Passwords don't match!");
+
+        expect(mockNavigation.navigate).not.toHaveBeenCalled();
+        expect(authApi.register).not.toHaveBeenCalled();
+    });
+
+    it("shows validation error if username is empty", async () => {
+        const { findByPlaceholderText, findByTestId } = render(
+            <Registration navigation={mockNavigation} />
+        );
+
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
+
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
+        const errorText = await findByTestId("errorMessage");
+        expect(errorText.props.children).toBe("Please fill in all fields.");
+
+        expect(authApi.register).not.toHaveBeenCalled();
+    });
+
+    it("handles successful registration and navigates to Login", async () => {
+        authApi.register.mockResolvedValueOnce({
+            message: "Registration successful",
         });
+
+        const { findByPlaceholderText, findByTestId, queryByTestId } = render(
+            <Registration navigation={mockNavigation} />
+        );
+
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
+
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
         await waitFor(() => {
             expect(mockNavigation.navigate).toHaveBeenCalledWith("Login");
         });
+
+        // Should not show any error
+        expect(queryByTestId("errorMessage")).toBeNull();
     });
 
-    it("shows an alert if passwords do not match", async () => {
-        const { getByPlaceholderText, getByText } = render(
+    it("shows error message when username already exists (409 conflict)", async () => {
+        const error = new Error(
+            "This username is already taken. Please choose another."
+        );
+        authApi.register.mockRejectedValueOnce(error);
+
+        const { findByPlaceholderText, findByTestId } = render(
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "differentPassword"
-        );
-        fireEvent.press(getByText("Register"));
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
 
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Error",
-                "Passwords don't match!"
-            );
-        });
-        expect(mockNavigation.navigate).not.toHaveBeenCalled();
-        expect(global.fetch).not.toHaveBeenCalled();
-    });
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
 
-    it("shows a generic issue alert for string detail from API", async () => {
-        const errorResponse = {
-            detail: "Some specific error occurred on the server.",
-        };
-        global.fetch.mockResolvedValueOnce({
-            ok: false,
-            status: 400,
-            text: () => Promise.resolve(JSON.stringify(errorResponse)),
+        await waitFor(async () => {
+            const errorElement = await findByTestId("errorMessage");
+            expect(errorElement).toBeTruthy();
+            expect(errorElement.props.children).toContain("already taken");
         });
 
-        const { getByPlaceholderText, getByText } = render(
-            <Registration navigation={mockNavigation} />
-        );
-
-        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "password123"
-        );
-        fireEvent.press(getByText("Register"));
-
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Registration Failed",
-                "Registration failed due to an issue with the provided data. Please try again."
-            );
-        });
         expect(mockNavigation.navigate).not.toHaveBeenCalled();
     });
 
-    it("shows an alert if API error response is not valid JSON", async () => {
-        const rawErrorText = "Internal Server Error - Not JSON";
-        global.fetch.mockResolvedValueOnce({
-            ok: false,
-            status: 500,
-            text: () => Promise.resolve(rawErrorText),
-        });
+    it("shows error message for validation errors", async () => {
+        const error = new Error("Please enter a valid username and password.");
+        authApi.register.mockRejectedValueOnce(error);
 
-        const { getByPlaceholderText, getByText } = render(
+        const { findByPlaceholderText, findByTestId } = render(
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "password123"
-        );
-        fireEvent.press(getByText("Register"));
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
 
-        await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Registration Failed",
-                "Could not understand the server's error message. The raw response for our developers is: " +
-                    rawErrorText
-            );
+        fireEvent.changeText(usernameInput, "test user");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
+        await waitFor(async () => {
+            const errorElement = await findByTestId("errorMessage");
+            expect(errorElement).toBeTruthy();
         });
+
         expect(mockNavigation.navigate).not.toHaveBeenCalled();
     });
 
-    it("shows an alert for network request failed", async () => {
-        global.fetch.mockRejectedValueOnce(new Error("Network request failed")); // Simulate fetch throwing an error
+    it("shows error message for server errors", async () => {
+        const error = new Error("Server error. Please try again later.");
+        authApi.register.mockRejectedValueOnce(error);
 
-        const { getByPlaceholderText, getByText } = render(
+        const { findByPlaceholderText, findByTestId } = render(
             <Registration navigation={mockNavigation} />
         );
 
-        fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
-        fireEvent.changeText(getByPlaceholderText("Password"), "password123");
-        fireEvent.changeText(
-            getByPlaceholderText("Confirm Password"),
-            "password123"
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
+
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
+        await waitFor(async () => {
+            const errorElement = await findByTestId("errorMessage");
+            expect(errorElement.props.children).toContain("Server error");
+        });
+
+        expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    });
+
+    it("shows error message for network failures", async () => {
+        const error = new Error("Network error. Please check your connection.");
+        authApi.register.mockRejectedValueOnce(error);
+
+        const { findByPlaceholderText, findByTestId } = render(
+            <Registration navigation={mockNavigation} />
         );
-        fireEvent.press(getByText("Register"));
+
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
+
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
+        await waitFor(async () => {
+            const errorElement = await findByTestId("errorMessage");
+            expect(errorElement.props.children).toContain("Network error");
+        });
+
+        expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    });
+
+    it("shows loading indicator during registration", async () => {
+        authApi.register.mockImplementation(
+            () =>
+                new Promise((resolve) =>
+                    setTimeout(() => resolve({ message: "Success" }), 100)
+                )
+        );
+
+        const { findByTestId, queryByTestId, findByPlaceholderText } = render(
+            <Registration navigation={mockNavigation} />
+        );
+
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
+
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
+        expect(await findByTestId("loadingIndicator")).toBeTruthy();
 
         await waitFor(() => {
-            expect(Alert.alert).toHaveBeenCalledWith(
-                "Registration Error",
-                "Could not connect to the server. Please check your network connection."
-            );
+            expect(queryByTestId("loadingIndicator")).toBeNull();
         });
-        expect(mockNavigation.navigate).not.toHaveBeenCalled();
+    });
+
+    it("disables inputs during registration", async () => {
+        authApi.register.mockImplementation(
+            () =>
+                new Promise((resolve) =>
+                    setTimeout(() => resolve({ message: "Success" }), 100)
+                )
+        );
+
+        const { findByTestId, findByPlaceholderText } = render(
+            <Registration navigation={mockNavigation} />
+        );
+
+        const usernameInput = await findByPlaceholderText("Username");
+        const passwordInput = await findByPlaceholderText("Password");
+        const confirmPasswordInput =
+            await findByPlaceholderText("Confirm Password");
+        const registerButton = await findByTestId("registerButton");
+
+        fireEvent.changeText(usernameInput, "testuser");
+        fireEvent.changeText(passwordInput, "password123");
+        fireEvent.changeText(confirmPasswordInput, "password123");
+        fireEvent.press(registerButton);
+
+        await waitFor(() => {
+            expect(usernameInput.props.editable).toBe(false);
+            expect(passwordInput.props.editable).toBe(false);
+            expect(confirmPasswordInput.props.editable).toBe(false);
+        });
     });
 });

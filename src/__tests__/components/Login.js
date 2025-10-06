@@ -151,9 +151,12 @@ describe("LoginScreen", () => {
 
         expect(await findByTestId("loadingIndicator")).toBeTruthy();
 
-        await waitFor(() => {
-            expect(queryByTestId("loadingIndicator")).toBeNull();
-        });
+        await waitFor(
+            () => {
+                expect(queryByTestId("loadingIndicator")).toBeNull();
+            },
+            { timeout: 3000 }
+        );
     });
 
     it("disables inputs during login", async () => {

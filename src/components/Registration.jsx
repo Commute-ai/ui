@@ -2,35 +2,45 @@ import { authApi } from "../api";
 
 import React from "react";
 
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+    ActivityIndicator,
+    Button,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+} from "react-native";
 
 export default function Registration({ navigation }) {
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [confirmPassword, setConfirmPassword] = React.useState("");
+    const [error, setError] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
 
     const handleRegister = async () => {
+        setError("");
+        setLoading(true);
+
         if (password !== confirmPassword) {
-            Alert.alert("Error", "Passwords don't match!");
+            setError("Passwords don't match!");
+            return;
+        }
+
+        if (!username || !password) {
+            setError("Please fill in all fields.");
+            setLoading(false);
             return;
         }
 
         try {
             await authApi.register(username, password);
-            Alert.alert("Success", "Registration successful!");
             navigation.navigate("Login");
         } catch (error) {
-            // Check if it's a network error
-            if (
-                error.message &&
-                error.message
-                    .toLowerCase()
-                    .includes("could not connect to the server")
-            ) {
-                Alert.alert("Registration Error", error.message);
-            } else {
-                Alert.alert("Registration Failed", error.message);
-            }
+            const message = error.message || "An unexpected error occurred.";
+            setError("Registration Failed " + message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,25 +50,48 @@ export default function Registration({ navigation }) {
             <TextInput
                 style={styles.input}
                 placeholder="Username"
+                required
                 onChangeText={setUsername}
                 value={username}
                 autoCapitalize="none"
+                editable={!loading}
             />
             <TextInput
                 style={styles.input}
                 placeholder="Password"
+                required
                 onChangeText={setPassword}
                 value={password}
                 secureTextEntry
+                editable={!loading}
             />
             <TextInput
                 style={styles.input}
                 placeholder="Confirm Password"
+                required
                 onChangeText={setConfirmPassword}
                 value={confirmPassword}
                 secureTextEntry
+                editable={!loading}
             />
-            <Button title="Register" onPress={handleRegister} />
+            {error ? (
+                <Text style={styles.errorText} testID="errorMessage">
+                    {error}
+                </Text>
+            ) : null}
+            {loading ? (
+                <ActivityIndicator
+                    size="large"
+                    color="#0000ff"
+                    testID="loadingIndicator"
+                />
+            ) : (
+                <Button
+                    title="Register"
+                    onPress={handleRegister}
+                    testID="registerButton"
+                />
+            )}
             <Button
                 title="Back to Login"
                 onPress={() => navigation.navigate("Login")}
@@ -86,5 +119,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 10,
         paddingHorizontal: 10,
+    },
+    errorText: {
+        color: "red",
+        marginBottom: 12,
+        textAlign: "center",
     },
 });
