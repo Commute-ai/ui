@@ -10,7 +10,7 @@
             "channel": "development"
         },
         "staging": {
-            "developmentClient": true,
+            "autoIncrement": true,
             "distribution": "internal",
             "channel": "staging",
             "android": {
