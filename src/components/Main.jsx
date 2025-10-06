@@ -1,6 +1,6 @@
 import { AuthContext, AuthProvider } from "../contexts/AuthContext.jsx";
 
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -25,7 +25,7 @@ const HomeScreen = ({ navigation }) => {
             // Simulate fetching user data with potential for error
             setTimeout(() => {
                 if (Math.random() > 0.5) {
-                    setUser({ username: 'John Doe' });
+                    setUser({ username: "John Doe" });
                 } else {
                     setError("Failed to load user data.");
                 }
@@ -39,7 +39,13 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            {isLoggedIn && <UserProfileHeader user={user} isLoading={isLoading} error={error} />}
+            {isLoggedIn && (
+                <UserProfileHeader
+                    user={user}
+                    isLoading={isLoading}
+                    error={error}
+                />
+            )}
             <View style={styles.contentContainer}>
                 <Text>Welcome to the App!</Text>
                 {isLoggedIn ? (
@@ -104,7 +110,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    }
+        alignItems: "center",
+        justifyContent: "center",
+    },
 });
