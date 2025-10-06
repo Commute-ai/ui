@@ -1,4 +1,4 @@
-import { authApi } from "../api";
+import { authApi } from "@/lib/api";
 
 import React from "react";
 

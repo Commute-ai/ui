@@ -1,5 +1,3 @@
-import { AuthContext, AuthProvider } from "../contexts/AuthContext.jsx";
-
 import React, { useContext, useEffect, useState } from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
@@ -7,9 +5,12 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { Button, StyleSheet, Text, View } from "react-native";
 
-import LoginScreen from "./Login.jsx";
-import Registration from "./Registration.jsx";
-import UserProfileHeader from "./UserProfileHeader.jsx";
+import { AuthContext, AuthProvider } from "@/lib/contexts/AuthContext";
+
+import UserProfileHeader from "@/components/UserProfileHeader";
+
+import LoginScreen from "@/screens/Login";
+import Registration from "@/screens/Register";
 
 // Placeholder HomeScreen - you can replace this with your actual home screen content
 const HomeScreen = ({ navigation }) => {

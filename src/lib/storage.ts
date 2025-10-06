@@ -8,11 +8,7 @@ const TOKEN_KEY = "auth_token";
  * Uses SecureStore for native platforms and localStorage for web
  */
 const storage = {
-    /**
-     * Save authentication token securely
-     * @param {string} token - Authentication token to store
-     */
-    async saveToken(token) {
+    async saveToken(token: string) {
         try {
             if (Platform.OS === "web") {
                 // Use localStorage for web
