@@ -5,7 +5,7 @@ const UserProfileHeader = ({ user, isLoading, error }) => {
   return (
     <View style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator size="small" color="#0000ff" />
+        <ActivityIndicator testID="activity-indicator" size="small" color="#0000ff" />
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : (
