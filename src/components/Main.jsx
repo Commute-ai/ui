@@ -1,6 +1,7 @@
 import { AuthContext, AuthProvider } from "../contexts/AuthContext.jsx";
+import { UserContext, UserProvider } from "../contexts/UserContext.jsx";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -11,31 +12,9 @@ import LoginScreen from "./Login.jsx";
 import Registration from "./Registration.jsx";
 import UserProfileHeader from "./UserProfileHeader.jsx";
 
-// Placeholder HomeScreen - you can replace this with your actual home screen content
 const HomeScreen = ({ navigation }) => {
     const { isLoggedIn, logout } = useContext(AuthContext);
-    const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        if (isLoggedIn) {
-            setIsLoading(true);
-            setError(null);
-            // Simulate fetching user data with potential for error
-            setTimeout(() => {
-                if (Math.random() > 0.5) {
-                    setUser({ username: "John Doe" });
-                } else {
-                    setError("Failed to load user data.");
-                }
-                setIsLoading(false);
-            }, 1500);
-        } else {
-            setUser(null);
-            setError(null);
-        }
-    }, [isLoggedIn]);
+    const { user, isLoading, error } = useContext(UserContext);
 
     return (
         <View style={styles.container}>
@@ -95,9 +74,11 @@ function AppNavigator() {
 export default function Main() {
     return (
         <AuthProvider>
-            <NavigationContainer>
-                <AppNavigator />
-            </NavigationContainer>
+            <UserProvider>
+                <NavigationContainer>
+                    <AppNavigator />
+                </NavigationContainer>
+            </UserProvider>
         </AuthProvider>
     );
 }

@@ -21,7 +21,7 @@ const LoginScreen = ({ navigation }) => {
     const [password, setPassword] = React.useState("");
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
-    const { setIsLoggedIn } = useContext(AuthContext); // Get setIsLoggedIn from context
+    const { setIsLoggedIn, setToken } = useContext(AuthContext); // Get setIsLoggedIn and setToken from context
 
     const handleLogin = async () => {
         // Clear previous error
@@ -46,6 +46,7 @@ const LoginScreen = ({ navigation }) => {
             // Store authentication token
             if (response.access_token) {
                 await storage.saveToken(response.access_token);
+                setToken(response.access_token); // Set the token in AuthContext
                 setIsLoggedIn(true); // Set logged in state to true
             }
 
