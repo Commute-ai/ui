@@ -1,7 +1,9 @@
 import { AuthContext } from "../contexts/AuthContext.jsx";
+
 import React, { useContext } from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+
 import { StatusBar } from "expo-status-bar";
+import { Button, StyleSheet, Text, View } from "react-native";
 
 const HomeScreen = ({ navigation }) => {
     const { isLoggedIn, logout } = useContext(AuthContext);

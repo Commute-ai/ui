@@ -1,8 +1,11 @@
 import { AuthContext, AuthProvider } from "../contexts/AuthContext.jsx";
 import { UserContext, UserProvider } from "../contexts/UserContext.jsx";
+
+import React, { useContext } from "react";
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React, { useContext } from "react";
+
 import HomeScreen from "./HomeScreen.jsx";
 import LoginScreen from "./Login.jsx";
 import ProfileScreen from "./ProfileScreen.jsx";
@@ -22,7 +25,11 @@ function AppNavigator() {
             screenOptions={({ route }) => ({
                 title: route.name,
                 headerRight: () => {
-                    if (!isLoggedIn || route.name === "Login" || route.name === "Register") {
+                    if (
+                        !isLoggedIn ||
+                        route.name === "Login" ||
+                        route.name === "Register"
+                    ) {
                         return null;
                     }
                     return (

@@ -1,12 +1,14 @@
 import UserProfileHeader from "../../components/UserProfileHeader";
+
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+
 import { NavigationContainer } from "@react-navigation/native";
+import { fireEvent, render } from "@testing-library/react-native";
 
 const mockNavigate = jest.fn();
 
-jest.mock('@react-navigation/native', () => ({
-    ...jest.requireActual('@react-navigation/native'),
+jest.mock("@react-navigation/native", () => ({
+    ...jest.requireActual("@react-navigation/native"),
     useNavigation: () => ({
         navigate: mockNavigate,
     }),
@@ -63,7 +65,7 @@ describe("UserProfileHeader", () => {
         );
 
         fireEvent.press(getByText("Test User"));
-        expect(mockNavigate).toHaveBeenCalledWith('Profile');
+        expect(mockNavigate).toHaveBeenCalledWith("Profile");
     });
 
     it("renders the avatar when a user is provided", () => {
