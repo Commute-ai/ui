@@ -24,17 +24,27 @@ export default function HomeScreen() {
             setIsLoading(true);
             setError(null);
 
-            // Simulate fetching user data with potential for error
-            const timer = setTimeout(() => {
-                if (Math.random() > 0.2) {
-                    setUser({ username: "John Doe" });
-                } else {
-                    setError("Failed to load user data.");
-                }
-                setIsLoading(false);
-            }, 1000);
+            // TODO: Fetch real user data from your API
+            // For now, you can either:
+            // 1. Fetch user profile from API
+            // 2. Store username during login and retrieve it
+            // 3. Remove this section if you don't need user data displayed
 
-            return () => clearTimeout(timer);
+            // Example API call (uncomment when ready):
+            // const fetchUserProfile = async () => {
+            //     try {
+            //         const userData = await userApi.getProfile();
+            //         setUser(userData);
+            //     } catch (err) {
+            //         setError("Failed to load user data");
+            //     } finally {
+            //         setIsLoading(false);
+            //     }
+            // };
+            // fetchUserProfile();
+
+            // For now, just clear the loading state
+            setIsLoading(false);
         } else {
             setUser(null);
             setError(null);
@@ -45,14 +55,16 @@ export default function HomeScreen() {
         return null; // Router will handle redirect to login
     }
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
     return (
         <View className="flex-1 bg-background">
-            <UserProfileHeader
-                user={user}
-                isLoading={isLoading}
-                error={error}
-            />
-
             <View className="flex-1 items-center justify-center gap-6 p-6">
                 <View className="items-center gap-2">
                     <Text className="text-3xl font-bold">
@@ -63,16 +75,8 @@ export default function HomeScreen() {
                     </Text>
                 </View>
 
-                {user && (
-                    <View className="items-center gap-1">
-                        <Text className="text-lg text-foreground">
-                            Hello, {user.username}
-                        </Text>
-                    </View>
-                )}
-
                 <Button
-                    onPress={logout}
+                    onPress={handleLogout}
                     variant="destructive"
                     className="w-full max-w-xs"
                 >

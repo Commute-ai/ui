@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Slot, Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 
@@ -21,32 +21,22 @@ export {
 const RootLayoutNav = () => {
     const { colorScheme } = useColorScheme();
     const { isLoggedIn } = useAuth();
-    const segments = useSegments();
-    const router = useRouter();
-    const [isReady, setIsReady] = useState(false);
-
-    // Wait for layout to be ready
-    useEffect(() => {
-        setIsReady(true);
-    }, []);
-
-    // Redirect logic - only after ready
-    useEffect(() => {
-        if (!isReady) return;
-
-        const inAuthGroup = segments[0] === "(auth)";
-
-        if (!isLoggedIn && !inAuthGroup) {
-            router.replace("/login");
-        } else if (isLoggedIn && inAuthGroup) {
-            router.replace("/");
-        }
-    }, [isLoggedIn, segments, isReady]);
 
     return (
         <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
             <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-            <Slot />
+            <Stack screenOptions={{ headerShown: false }}>
+                {/* Authentication screens - only accessible when NOT logged in */}
+                <Stack.Protected guard={!isLoggedIn}>
+                    <Stack.Screen name="(auth)/login" />
+                    <Stack.Screen name="(auth)/register" />
+                </Stack.Protected>
+
+                {/* Protected app screens - only accessible when logged in */}
+                <Stack.Protected guard={isLoggedIn}>
+                    <Stack.Screen name="index" />
+                </Stack.Protected>
+            </Stack>
             <PortalHost />
         </ThemeProvider>
     );
