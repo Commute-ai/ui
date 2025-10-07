@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import { useSignIn } from "@clerk/clerk-expo";
+import { useSignUp } from "@clerk/clerk-expo";
 import { Link } from "expo-router";
-import { ActivityIndicator, type TextInput, View } from "react-native";
+import { ActivityIndicator, TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,37 +16,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 
-export function SignInForm() {
-    const { signIn, setActive, isLoaded } = useSignIn();
+export function SignUpForm() {
+    const { signUp, isLoaded } = useSignUp();
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
+
     const [loading, setLoading] = React.useState(false);
+
+    const passwordInputRef = React.useRef<TextInput>(null);
 
     const [error, setError] = React.useState<{
         username?: string;
         password?: string;
     }>({});
 
-    const passwordInputRef = React.useRef<TextInput>(null);
-
     async function onSubmit() {
-        if (!isLoaded) {
-            return;
-        }
+        if (!isLoaded) return;
+
         setLoading(true);
 
         try {
-            const signInAttempt = await signIn.create({
-                identifier: username,
+            await signUp.create({
+                username: username,
                 password,
             });
-
-            if (signInAttempt.status === "complete") {
-                setError({ username: "", password: "" });
-                await setActive({ session: signInAttempt.createdSessionId });
-            } else {
-                console.error(JSON.stringify(signInAttempt, null, 2));
-            }
         } catch (err) {
             // See https://go.clerk.com/mRUDrIe for more info on error handling
             if (err instanceof Error) {
@@ -79,10 +72,10 @@ export function SignInForm() {
             <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
                 <CardHeader>
                     <CardTitle className="text-center text-xl sm:text-left">
-                        Sign in to your app
+                        Create your account
                     </CardTitle>
                     <CardDescription className="text-center sm:text-left">
-                        Welcome back! Please sign in to continue
+                        Welcome! Please fill in the details to get started.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="gap-6">
@@ -94,7 +87,7 @@ export function SignInForm() {
                                 <Label htmlFor="username">Username</Label>
                                 <Input
                                     id="username"
-                                    placeholder="Enter your username"
+                                    placeholder="Please enter a username"
                                     autoComplete="username"
                                     autoCapitalize="none"
                                     onChangeText={setUsername}
@@ -132,10 +125,10 @@ export function SignInForm() {
                         </View>
                     )}
                     <Text className="text-center text-sm">
-                        Don&apos;t have an account?{" "}
-                        <Link href="/register" asChild>
+                        Already have an account?{" "}
+                        <Link href="/login" asChild>
                             <Text className="text-sm underline underline-offset-4">
-                                Sign up
+                                Sign in
                             </Text>
                         </Link>
                     </Text>

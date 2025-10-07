@@ -1,15 +1,12 @@
-import { useEffect, useState } from "react";
-
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
-import { Slot, Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 
-import { AuthProvider } from "@/lib/contexts/AuthContext";
 import { NAV_THEME } from "@/lib/theme";
-
-import { useAuth } from "@/hooks/useAuth";
 
 import "@/global.css";
 
@@ -20,21 +17,27 @@ export {
 
 const RootLayoutNav = () => {
     const { colorScheme } = useColorScheme();
-    const { isLoggedIn } = useAuth();
+    const { isSignedIn } = useAuth();
 
     return (
         <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
             <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
             <Stack>
-                <Stack.Protected guard={isLoggedIn}>
+                <Stack.Protected guard={isSignedIn}>
                     <Stack.Screen
                         name="(tabs)"
                         options={{ headerShown: false }}
                     />
                 </Stack.Protected>
-                <Stack.Protected guard={!isLoggedIn}>
-                    <Stack.Screen name="login" />
-                    <Stack.Screen name="register" />
+                <Stack.Protected guard={!isSignedIn}>
+                    <Stack.Screen
+                        name="login"
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="register"
+                        options={{ headerShown: false }}
+                    />
                 </Stack.Protected>
             </Stack>
             <PortalHost />
@@ -43,8 +46,8 @@ const RootLayoutNav = () => {
 };
 export default function RootLayout() {
     return (
-        <AuthProvider>
+        <ClerkProvider tokenCache={tokenCache}>
             <RootLayoutNav />
-        </AuthProvider>
+        </ClerkProvider>
     );
 }

@@ -20,6 +20,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^2.16.1",
     "@radix-ui/react-label": "^2.1.7",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.12",
@@ -30,12 +31,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "^54.0.10",
+    "expo-auth-session": "~7.0.8",
     "expo-constants": "^18.0.9",
     "expo-dev-client": "~6.0.12",
     "expo-router": "^6.0.10",
     "expo-secure-store": "^15.0.7",
     "expo-status-bar": "~3.0.8",
     "expo-updates": "~29.0.11",
+    "expo-web-browser": "~15.0.8",
     "formik": "^2.4.2",
     "lucide-react-native": "^0.545.0",
     "nativewind": "^4.2.1",
