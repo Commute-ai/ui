@@ -1,15 +1,15 @@
 import apiClient from "./client";
 
 const getMe = (token) => {
-  return apiClient.get("/users/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    return apiClient.get("/users/me", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 };
 
 const userService = {
-  getMe,
+    getMe,
 };
 
 export default userService;
