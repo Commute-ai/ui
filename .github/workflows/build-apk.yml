@@ -1,0 +1,86 @@
+name: Build APK
+
+permissions:
+    contents: write
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: "Build environment"
+                required: true
+                type: choice
+                options:
+                    - staging
+                    - production
+                default: "staging"
+
+env:
+    NODE_VERSION: 22.x
+
+jobs:
+    build:
+        name: Build ${{ github.event.inputs.environment }} APK
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
+
+            - name: 🔧 Set up Node.js ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "npm"
+
+            - name: 🔨 Setup Expo and EAS
+              uses: expo/expo-github-action@v8
+              with:
+                  eas-version: latest
+                  token: ${{ secrets.EXPO_TOKEN }}
+
+            - name: 📦 Install dependencies
+              run: npm ci
+
+            - name: 🏗️ Build ${{ github.event.inputs.environment }} APK
+              run: |
+                  echo "🚀 Building ${{ github.event.inputs.environment }} APK"
+                  echo "⏱️  This will take ~15-20 minutes"
+                  eas build \
+                    --platform android \
+                    --profile ${{ github.event.inputs.environment }} \
+                    --no-wait
+
+            - name: 📋 Build Instructions
+              run: |
+                  echo "========================================"
+                  echo "✅ Build started successfully!"
+                  echo "========================================"
+                  echo ""
+                  echo "📥 Download APK when ready from:"
+                  echo "   https://expo.dev"
+                  echo ""
+                  echo "⏱️  Build typically takes 15-20 minutes"
+                  echo "🔔 You'll receive an email when complete"
+                  echo "========================================"
+
+            - name: 📝 Add job summary
+              if: always()
+              run: |
+                  if [[ "${{ job.status }}" == "success" ]]; then
+                    echo "### ✅ APK Build Started" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "- **Environment:** \`${{ github.event.inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
+                    echo "- **Platform:** Android" >> $GITHUB_STEP_SUMMARY
+                    echo "- **Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "⏱️ Build will take approximately 15-20 minutes" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "📥 Download from: [Expo.dev](https://expo.dev)" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "🔔 You'll receive an email notification when the build completes." >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "### ❌ APK Build Failed" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "Check the job logs for details." >> $GITHUB_STEP_SUMMARY
+                  fi
