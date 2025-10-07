@@ -19,7 +19,7 @@ const UserProfileHeader = ({ user, isLoading, error }) => {
                 ) : (
                     user && (
                         <>
-                            <View style={styles.avatar} />
+                            <View testID="avatar" style={styles.avatar} />
                             <View style={styles.userInfo}>
                                 <Text style={styles.username}>{user.username}</Text>
                                 <Text style={styles.status}>Logged in</Text>

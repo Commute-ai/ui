@@ -1,13 +1,26 @@
 import UserProfileHeader from "../../components/UserProfileHeader";
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
+
+const mockNavigate = jest.fn();
+
+jest.mock('@react-navigation/native', () => ({
+    ...jest.requireActual('@react-navigation/native'),
+    useNavigation: () => ({
+        navigate: mockNavigate,
+    }),
+}));
 
 const renderWithNavigation = (component) => {
     return render(<NavigationContainer>{component}</NavigationContainer>);
 };
 
 describe("UserProfileHeader", () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it("renders a loading indicator when loading", () => {
         const { getByTestId } = renderWithNavigation(
             <UserProfileHeader isLoading={true} />
@@ -41,5 +54,24 @@ describe("UserProfileHeader", () => {
         );
         const activityIndicator = queryByTestId("activity-indicator");
         expect(activityIndicator).toBeNull();
+    });
+
+    it("navigates to Profile screen on press", () => {
+        const user = { username: "Test User" };
+        const { getByText } = renderWithNavigation(
+            <UserProfileHeader user={user} isLoading={false} />
+        );
+
+        fireEvent.press(getByText("Test User"));
+        expect(mockNavigate).toHaveBeenCalledWith('Profile');
+    });
+
+    it("renders the avatar when a user is provided", () => {
+        const user = { username: "Test User" };
+        const { getByTestId } = renderWithNavigation(
+            <UserProfileHeader user={user} isLoading={false} />
+        );
+        const avatar = getByTestId("avatar");
+        expect(avatar).toBeTruthy();
     });
 });
