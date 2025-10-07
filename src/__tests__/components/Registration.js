@@ -236,12 +236,10 @@ describe("Registration Component", () => {
     });
 
     it("shows loading indicator during registration", async () => {
-        authApi.register.mockImplementation(
-            () =>
-                new Promise((resolve) =>
-                    setTimeout(() => resolve({ message: "Success" }), 100)
-                )
-        );
+        authApi.register.mockImplementation(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            return { message: "Success" };
+        });
 
         const { findByTestId, queryByTestId, findByPlaceholderText } = render(
             <Registration navigation={mockNavigation} />
@@ -266,12 +264,10 @@ describe("Registration Component", () => {
     });
 
     it("disables inputs during registration", async () => {
-        authApi.register.mockImplementation(
-            () =>
-                new Promise((resolve) =>
-                    setTimeout(() => resolve({ message: "Success" }), 100)
-                )
-        );
+        authApi.register.mockImplementation(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            return { message: "Success" };
+        });
 
         const { findByTestId, findByPlaceholderText } = render(
             <Registration navigation={mockNavigation} />
