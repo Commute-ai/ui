@@ -20,6 +20,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.12",
     "@rn-primitives/label": "^1.2.0",

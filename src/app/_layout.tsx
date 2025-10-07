@@ -25,16 +25,16 @@ const RootLayoutNav = () => {
     return (
         <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
             <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-            <Stack screenOptions={{ headerShown: false }}>
-                {/* Authentication screens - only accessible when NOT logged in */}
-                <Stack.Protected guard={!isLoggedIn}>
-                    <Stack.Screen name="(auth)/login" />
-                    <Stack.Screen name="(auth)/register" />
-                </Stack.Protected>
-
-                {/* Protected app screens - only accessible when logged in */}
+            <Stack>
                 <Stack.Protected guard={isLoggedIn}>
-                    <Stack.Screen name="index" />
+                    <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                    />
+                </Stack.Protected>
+                <Stack.Protected guard={!isLoggedIn}>
+                    <Stack.Screen name="login" />
+                    <Stack.Screen name="register" />
                 </Stack.Protected>
             </Stack>
             <PortalHost />
