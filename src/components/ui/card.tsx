@@ -1,6 +1,6 @@
 import { View, type ViewProps } from "react-native";
 
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 import { Text, TextClassContext } from "@/components/ui/text";
 

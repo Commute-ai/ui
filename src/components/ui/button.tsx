@@ -1,7 +1,7 @@
 import { type VariantProps, cva } from "class-variance-authority";
 import { Platform, Pressable } from "react-native";
 
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/lib/utils";
 
 import { TextClassContext } from "@/components/ui/text";
 
