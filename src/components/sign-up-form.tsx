@@ -1,8 +1,9 @@
 import * as React from "react";
 
-import { useSignUp } from "@clerk/clerk-expo";
 import { Link } from "expo-router";
 import { ActivityIndicator, TextInput, View } from "react-native";
+
+import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 
 export function SignUpForm() {
-    const { signUp, isLoaded } = useSignUp();
+    const { signUp, isLoaded } = useAuth();
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
 
@@ -36,27 +37,18 @@ export function SignUpForm() {
         setLoading(true);
 
         try {
-            await signUp.create({
-                username: username,
-                password,
-            });
+            await signUp(username, password);
         } catch (err) {
             // See https://go.clerk.com/mRUDrIe for more info on error handling
             if (err instanceof Error) {
-                const isUsernameMessage =
-                    err.message.toLowerCase().includes("identifier") ||
-                    err.message.toLowerCase().includes("username");
-                setError(
-                    isUsernameMessage
-                        ? {
-                              username: err.message
-                                  .replace("identifier", "username")
-                                  .replace("Identifier", "Username"),
-                          }
-                        : { password: err.message }
-                );
+                if (err.message.toLowerCase().includes("username")) {
+                    setError({ username: err.message });
+                } else {
+                    setError({ password: err.message });
+                }
             } else {
                 console.error(JSON.stringify(err, null, 2));
+                setError({ password: "Sign up failed. Please try again." });
             }
         } finally {
             setLoading(false);

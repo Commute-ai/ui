@@ -1,8 +1,9 @@
 import * as React from "react";
 
-import { useSignIn } from "@clerk/clerk-expo";
 import { Link } from "expo-router";
 import { ActivityIndicator, type TextInput, View } from "react-native";
+
+import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Text } from "@/components/ui/text";
 
 export function SignInForm() {
-    const { signIn, setActive, isLoaded } = useSignIn();
+    const { signIn, isLoaded } = useAuth();
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [loading, setLoading] = React.useState(false);
@@ -36,34 +37,17 @@ export function SignInForm() {
         setLoading(true);
 
         try {
-            const signInAttempt = await signIn.create({
-                identifier: username,
-                password,
-            });
-
-            if (signInAttempt.status === "complete") {
-                setError({ username: "", password: "" });
-                await setActive({ session: signInAttempt.createdSessionId });
-            } else {
-                console.error(JSON.stringify(signInAttempt, null, 2));
-            }
+            await signIn(username, password);
         } catch (err) {
-            // See https://go.clerk.com/mRUDrIe for more info on error handling
             if (err instanceof Error) {
-                const isUsernameMessage =
-                    err.message.toLowerCase().includes("identifier") ||
-                    err.message.toLowerCase().includes("username");
-                setError(
-                    isUsernameMessage
-                        ? {
-                              username: err.message
-                                  .replace("identifier", "username")
-                                  .replace("Identifier", "Username"),
-                          }
-                        : { password: err.message }
-                );
+                if (err.message.toLowerCase().includes("username")) {
+                    setError({ username: err.message });
+                } else {
+                    setError({ password: err.message });
+                }
             } else {
-                console.error(JSON.stringify(err, null, 2));
+                console.error("Sign in error:", JSON.stringify(err, null, 2));
+                setError({ password: "Sign in failed. Please try again." });
             }
         } finally {
             setLoading(false);

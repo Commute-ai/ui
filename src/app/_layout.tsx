@@ -1,12 +1,13 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
-import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 
+import { AuthProvider } from "@/lib/contexts/AuthContext";
 import { NAV_THEME } from "@/lib/theme";
+
+import { useAuth } from "@/hooks/useAuth";
 
 import "@/global.css";
 
@@ -46,8 +47,8 @@ const RootLayoutNav = () => {
 };
 export default function RootLayout() {
     return (
-        <ClerkProvider tokenCache={tokenCache}>
+        <AuthProvider>
             <RootLayoutNav />
-        </ClerkProvider>
+        </AuthProvider>
     );
 }
