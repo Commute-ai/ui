@@ -1,13 +1,42 @@
 import config from "../config/environment";
 
 /**
- * Centralized API client with clean error handling
- * Follows single responsibility principle
+ * API Client Configuration
+ */
+interface RequestOptions extends RequestInit {
+    headers?: Record<string, string>;
+}
+
+interface ApiClientConfig {
+    baseUrl: string;
+    defaultHeaders?: Record<string, string>;
+}
+
+/**
+ * Custom error class for API errors
+ */
+export class ApiError extends Error {
+    constructor(
+        message: string,
+        public code: string,
+        public statusCode: number | null = null
+    ) {
+        super(message);
+        this.name = "ApiError";
+    }
+}
+
+/**
+ * Centralized API client with TypeScript support
+ * Handles all HTTP communication with the backend
  */
 class ApiClient {
-    constructor(baseUrl) {
+    private baseUrl: string;
+    private defaultHeaders: Record<string, string>;
+
+    constructor(baseUrl: string, defaultHeaders?: Record<string, string>) {
         this.baseUrl = baseUrl;
-        this.defaultHeaders = {
+        this.defaultHeaders = defaultHeaders || {
             "Content-Type": "application/json",
             Accept: "application/json",
         };
@@ -15,12 +44,14 @@ class ApiClient {
 
     /**
      * Main request method
-     * Simplified error handling - just parse and throw
      */
-    async request(endpoint, options = {}) {
+    async request<T = any>(
+        endpoint: string,
+        options: RequestOptions = {}
+    ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
 
-        const config = {
+        const config: RequestInit = {
             ...options,
             headers: {
                 ...this.defaultHeaders,
@@ -39,14 +70,14 @@ class ApiClient {
             // Parse successful response
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
-                return await response.json();
+                return (await response.json()) as T;
             }
 
-            return await response.text();
+            return (await response.text()) as T;
         } catch (error) {
             // Handle network errors
             if (
-                error.name === "TypeError" &&
+                error instanceof TypeError &&
                 error.message.includes("Failed to fetch")
             ) {
                 throw new ApiError(
@@ -71,10 +102,9 @@ class ApiClient {
 
     /**
      * Handle error responses from server
-     * @private
      */
-    async _handleErrorResponse(response) {
-        let errorData;
+    private async _handleErrorResponse(response: Response): Promise<never> {
+        let errorData: any;
 
         try {
             const text = await response.text();
@@ -99,13 +129,12 @@ class ApiClient {
 
     /**
      * Extract user-friendly error message from server response
-     * @private
      */
-    _extractErrorMessage(errorData, statusCode) {
+    private _extractErrorMessage(errorData: any, statusCode: number): string {
         // Handle FastAPI validation errors
         if (Array.isArray(errorData.detail)) {
             const errors = errorData.detail
-                .map((err) => err.msg || err.message)
+                .map((err: any) => err.msg || err.message)
                 .filter(Boolean);
             return errors.length > 0
                 ? errors.join(". ")
@@ -128,10 +157,9 @@ class ApiClient {
 
     /**
      * Get default error message by status code
-     * @private
      */
-    _getDefaultErrorMessage(statusCode) {
-        const messages = {
+    private _getDefaultErrorMessage(statusCode: number): string {
+        const messages: Record<number, string> = {
             400: "Invalid request. Please check your input.",
             401: "Authentication failed. Please check your credentials.",
             403: "Access denied.",
@@ -149,10 +177,9 @@ class ApiClient {
 
     /**
      * Get error code by status
-     * @private
      */
-    _getErrorCode(statusCode) {
-        const codes = {
+    private _getErrorCode(statusCode: number): string {
+        const codes: Record<number, string> = {
             400: "BAD_REQUEST",
             401: "UNAUTHORIZED",
             403: "FORBIDDEN",
@@ -166,41 +193,55 @@ class ApiClient {
         return codes[statusCode] || "HTTP_ERROR";
     }
 
-    // Convenience methods
-    async get(endpoint, options = {}) {
-        return this.request(endpoint, { ...options, method: "GET" });
+    // Convenience methods with proper TypeScript generics
+    async get<T = any>(
+        endpoint: string,
+        options: RequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>(endpoint, { ...options, method: "GET" });
     }
 
-    async post(endpoint, data, options = {}) {
-        return this.request(endpoint, {
+    async post<T = any>(
+        endpoint: string,
+        data?: any,
+        options: RequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>(endpoint, {
             ...options,
             method: "POST",
-            body: JSON.stringify(data),
+            body: data ? JSON.stringify(data) : undefined,
         });
     }
 
-    async put(endpoint, data, options = {}) {
-        return this.request(endpoint, {
+    async put<T = any>(
+        endpoint: string,
+        data?: any,
+        options: RequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>(endpoint, {
             ...options,
             method: "PUT",
-            body: JSON.stringify(data),
+            body: data ? JSON.stringify(data) : undefined,
         });
     }
 
-    async delete(endpoint, options = {}) {
-        return this.request(endpoint, { ...options, method: "DELETE" });
+    async delete<T = any>(
+        endpoint: string,
+        options: RequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>(endpoint, { ...options, method: "DELETE" });
     }
-}
 
-/**
- * Custom error class for API errors
- */
-export class ApiError extends Error {
-    constructor(message, code, statusCode = null) {
-        super(message);
-        this.name = "ApiError";
-        this.code = code;
-        this.statusCode = statusCode;
+    async patch<T = any>(
+        endpoint: string,
+        data?: any,
+        options: RequestOptions = {}
+    ): Promise<T> {
+        return this.request<T>(endpoint, {
+            ...options,
+            method: "PATCH",
+            body: data ? JSON.stringify(data) : undefined,
+        });
     }
 }
 
