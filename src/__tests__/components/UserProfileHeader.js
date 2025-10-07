@@ -1,19 +1,24 @@
 import UserProfileHeader from "../../components/UserProfileHeader";
-
 import React from "react";
-
 import { render } from "@testing-library/react-native";
+import { NavigationContainer } from "@react-navigation/native";
+
+const renderWithNavigation = (component) => {
+    return render(<NavigationContainer>{component}</NavigationContainer>);
+};
 
 describe("UserProfileHeader", () => {
     it("renders a loading indicator when loading", () => {
-        const { getByTestId } = render(<UserProfileHeader isLoading={true} />);
+        const { getByTestId } = renderWithNavigation(
+            <UserProfileHeader isLoading={true} />
+        );
         const activityIndicator = getByTestId("activity-indicator");
         expect(activityIndicator).toBeTruthy();
     });
 
     it("renders user information when data is provided", () => {
         const user = { username: "Test User" };
-        const { getByText } = render(
+        const { getByText } = renderWithNavigation(
             <UserProfileHeader user={user} isLoading={false} />
         );
         const username = getByText("Test User");
@@ -23,7 +28,7 @@ describe("UserProfileHeader", () => {
     });
 
     it("renders an error message when an error occurs", () => {
-        const { getByText } = render(
+        const { getByText } = renderWithNavigation(
             <UserProfileHeader error="Failed to load" isLoading={false} />
         );
         const errorMessage = getByText("Failed to load");
@@ -31,7 +36,7 @@ describe("UserProfileHeader", () => {
     });
 
     it("renders nothing when no user is provided and not loading", () => {
-        const { queryByTestId } = render(
+        const { queryByTestId } = renderWithNavigation(
             <UserProfileHeader user={null} isLoading={false} />
         );
         const activityIndicator = queryByTestId("activity-indicator");
