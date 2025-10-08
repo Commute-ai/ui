@@ -1,13 +1,10 @@
 import config from "@/lib/config/environment";
 
-/**
- * API Client Configuration
- */
-interface RequestOptions extends RequestInit {
+export interface RequestOptions extends RequestInit {
     headers?: Record<string, string>;
 }
 
-interface ApiClientConfig {
+export interface ApiClientConfig {
     baseUrl: string;
     defaultHeaders?: Record<string, string>;
 }
