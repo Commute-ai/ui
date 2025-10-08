@@ -1,9 +1,8 @@
-// contexts/AuthContext.tsx
 import React, { ReactNode, createContext, useEffect, useState } from "react";
 
 import authApi from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
-import type { User } from "@/lib/types/user";
+import type { User } from "@/types/user";
 
 export interface AuthContextType {
     user: User | null;

@@ -1,5 +1,5 @@
 // lib/api/auth.ts
-import type { NewUser, User } from "@/lib/types/user";
+import type { NewUser, User } from "@/types/user";
 
 import apiClient from "./client";
 

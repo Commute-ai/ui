@@ -4,7 +4,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 
-import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { NAV_THEME } from "@/lib/theme";
 
 import { useAuth } from "@/hooks/useAuth";

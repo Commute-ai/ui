@@ -1,4 +1,4 @@
-import config from "../config/environment";
+import config from "@/lib/config/environment";
 
 /**
  * API Client Configuration
