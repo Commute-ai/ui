@@ -24,6 +24,7 @@ export default function Registration({ navigation }) {
 
         if (password !== confirmPassword) {
             setError("Passwords don't match!");
+            setLoading(false);
             return;
         }
 

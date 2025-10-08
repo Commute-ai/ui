@@ -5,68 +5,48 @@ import React, { useContext } from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { StatusBar } from "expo-status-bar";
-import { Button, StyleSheet, Text, View } from "react-native";
 
+import HomeScreen from "./HomeScreen.jsx";
 import LoginScreen from "./Login.jsx";
+import ProfileScreen from "./ProfileScreen.jsx";
 import Registration from "./Registration.jsx";
+import SettingsScreen from "./SettingsScreen.jsx";
 import UserProfileHeader from "./UserProfileHeader.jsx";
-
-const HomeScreen = ({ navigation }) => {
-    const { isLoggedIn, logout } = useContext(AuthContext);
-    const { user, isLoading, error } = useContext(UserContext);
-
-    return (
-        <View style={styles.container}>
-            {isLoggedIn && (
-                <UserProfileHeader
-                    user={user}
-                    isLoading={isLoading}
-                    error={error}
-                />
-            )}
-            <View style={styles.contentContainer}>
-                <Text>Welcome to the App!</Text>
-                {isLoggedIn ? (
-                    <>
-                        <Text>You are logged in!</Text>
-                        <Button title="Logout" onPress={logout} />
-                    </>
-                ) : (
-                    <Text>You are not logged in.</Text>
-                )}
-                {!isLoggedIn && ( // Show button only if not logged in
-                    <Button
-                        title="Go to Login"
-                        onPress={() => navigation.navigate("Login")}
-                    />
-                )}
-            </View>
-            <StatusBar style="auto" />
-        </View>
-    );
-};
 
 const Stack = createNativeStackNavigator();
 
 function AppNavigator() {
+    const { isLoggedIn } = useContext(AuthContext);
+    const { user, isLoading, error } = useContext(UserContext);
+
     return (
-        <Stack.Navigator initialRouteName="Home">
-            <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-                options={{ title: "Login" }}
-            />
-            <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{ title: "Home" }}
-            />
-            <Stack.Screen
-                name="Register"
-                component={Registration}
-                options={{ title: "Register" }}
-            />
+        <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={({ route }) => ({
+                title: route.name,
+                headerRight: () => {
+                    if (
+                        !isLoggedIn ||
+                        route.name === "Login" ||
+                        route.name === "Register"
+                    ) {
+                        return null;
+                    }
+                    return (
+                        <UserProfileHeader
+                            user={user}
+                            isLoading={isLoading}
+                            error={error}
+                        />
+                    );
+                },
+            })}
+        >
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Register" component={Registration} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
     );
 }
@@ -82,16 +62,3 @@ export default function Main() {
         </AuthProvider>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-        alignItems: "center",
-    },
-    contentContainer: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-});
