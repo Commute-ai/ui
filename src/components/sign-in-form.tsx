@@ -34,6 +34,7 @@ export function SignInForm() {
         if (!isLoaded) {
             return;
         }
+        setError({});
         setLoading(true);
 
         try {
@@ -46,7 +47,7 @@ export function SignInForm() {
                     setError({ password: err.message });
                 }
             } else {
-                console.error("Sign in error:", JSON.stringify(err, null, 2));
+                console.error(JSON.stringify(err, null, 2));
                 setError({ password: "Sign in failed. Please try again." });
             }
         } finally {
@@ -78,10 +79,12 @@ export function SignInForm() {
                                 <Label htmlFor="username">Username</Label>
                                 <Input
                                     id="username"
+                                    testID="username-input"
                                     placeholder="Enter your username"
                                     autoComplete="username"
                                     autoCapitalize="none"
                                     onChangeText={setUsername}
+                                    value={username}
                                     onSubmitEditing={onUsernameSubmitEditing}
                                     returnKeyType="next"
                                     submitBehavior="submit"
@@ -99,8 +102,10 @@ export function SignInForm() {
                                 <Input
                                     ref={passwordInputRef}
                                     id="password"
+                                    testID="password-input"
                                     secureTextEntry
                                     onChangeText={setPassword}
+                                    value={password}
                                     returnKeyType="send"
                                     onSubmitEditing={onSubmit}
                                 />

@@ -1,12 +1,10 @@
 import type { AuthResponse } from "@/lib/api/auth";
 import authApi from "@/lib/api/auth";
-// Import after mocking to get the mocked version
 import apiClient from "@/lib/api/client";
 
 import { ApiError } from "@/types/api";
 import type { User } from "@/types/user";
 
-// This will automatically use the mock from __mocks__/client.ts
 jest.mock("@/lib/api/client");
 
 const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;

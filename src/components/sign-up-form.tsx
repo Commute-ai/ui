@@ -35,11 +35,11 @@ export function SignUpForm() {
         if (!isLoaded) return;
 
         setLoading(true);
+        setError({});
 
         try {
             await signUp(username, password);
         } catch (err) {
-            // See https://go.clerk.com/mRUDrIe for more info on error handling
             if (err instanceof Error) {
                 if (err.message.toLowerCase().includes("username")) {
                     setError({ username: err.message });
@@ -79,10 +79,12 @@ export function SignUpForm() {
                                 <Label htmlFor="username">Username</Label>
                                 <Input
                                     id="username"
+                                    testID="username-input"
                                     placeholder="Please enter a username"
                                     autoComplete="username"
                                     autoCapitalize="none"
                                     onChangeText={setUsername}
+                                    value={username}
                                     onSubmitEditing={onUsernameSubmitEditing}
                                     returnKeyType="next"
                                     submitBehavior="submit"
@@ -100,8 +102,10 @@ export function SignUpForm() {
                                 <Input
                                     ref={passwordInputRef}
                                     id="password"
+                                    testID="password-input"
                                     secureTextEntry
                                     onChangeText={setPassword}
+                                    value={password}
                                     returnKeyType="send"
                                     onSubmitEditing={onSubmit}
                                 />
