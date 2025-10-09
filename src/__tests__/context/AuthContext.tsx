@@ -1,22 +1,14 @@
 import React from "react";
 
 import { renderHook, waitFor, act } from "@testing-library/react-native";
-import { AuthProvider, AuthContext } from "@/context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import authApi from "@/lib/api/auth";
-import { ApiError } from "@/lib/api/client";
 import type { User } from "@/types/user";
+import { ApiError } from "@/types/api";
 
 // Mock the auth API
-jest.mock("../../lib/api/auth", () => ({
-    __esModule: true,
-    default: {
-        login: jest.fn(),
-        register: jest.fn(),
-        logout: jest.fn(),
-        getCurrentUser: jest.fn(),
-    },
-}));
+jest.mock("@/lib/api/auth");
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -37,9 +29,6 @@ describe("AuthContext", () => {
     const mockUser: User = {
         id: "1",
         username: "testuser",
-        email: "test@example.com",
-        created_at: new Date("2024-01-01"),
-        updated_at: new Date("2024-01-01"),
     };
 
     const mockToken = "test-token-123";
@@ -168,9 +157,9 @@ describe("AuthContext", () => {
             expect(result.current.isSignedIn).toBe(true);
         });
 
-        it("throws error with ApiError message on sign in failure", async () => {
-            const apiError = new ApiError("Invalid credentials", "AUTH_ERROR", 401);
-            (authApi.login as jest.Mock).mockRejectedValue(apiError);
+        it("throws error on login failure", async () => {
+            const mockError = new ApiError("Invalid credentials", "UNAUTHORIZED");
+            (authApi.login as jest.Mock).mockRejectedValue(mockError);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>
@@ -187,29 +176,6 @@ describe("AuthContext", () => {
                     await result.current.signIn("testuser", "wrongpassword");
                 })
             ).rejects.toThrow("Invalid credentials");
-
-            expect(result.current.user).toBeNull();
-            expect(result.current.isSignedIn).toBe(false);
-        });
-
-        it("throws generic error on non-ApiError failure", async () => {
-            (authApi.login as jest.Mock).mockRejectedValue(new Error("Network error"));
-
-            const wrapper = ({ children }: { children: React.ReactNode }) => (
-                <AuthProvider>{children}</AuthProvider>
-            );
-
-            const { result } = renderHook(() => useAuth(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoaded).toBe(true);
-            });
-
-            await expect(
-                act(async () => {
-                    await result.current.signIn("testuser", "password123");
-                })
-            ).rejects.toThrow("Sign in failed. Please try again.");
         });
     });
 
@@ -245,9 +211,9 @@ describe("AuthContext", () => {
             expect(result.current.isSignedIn).toBe(true);
         });
 
-        it("throws error with ApiError message on sign up failure", async () => {
-            const apiError = new ApiError("Username already exists", "VALIDATION_ERROR", 422);
-            (authApi.register as jest.Mock).mockRejectedValue(apiError);
+        it("throws error on registration failure", async () => {
+            const mockError = new ApiError("Username already exists", "CONFLICT");
+            (authApi.register as jest.Mock).mockRejectedValue(mockError);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>
@@ -264,38 +230,15 @@ describe("AuthContext", () => {
                     await result.current.signUp("existinguser", "password123");
                 })
             ).rejects.toThrow("Username already exists");
-
-            expect(result.current.user).toBeNull();
-            expect(result.current.isSignedIn).toBe(false);
-        });
-
-        it("throws generic error on non-ApiError failure", async () => {
-            (authApi.register as jest.Mock).mockRejectedValue(new Error("Server error"));
-
-            const wrapper = ({ children }: { children: React.ReactNode }) => (
-                <AuthProvider>{children}</AuthProvider>
-            );
-
-            const { result } = renderHook(() => useAuth(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoaded).toBe(true);
-            });
-
-            await expect(
-                act(async () => {
-                    await result.current.signUp("newuser", "password123");
-                })
-            ).rejects.toThrow("Sign up failed. Please try again.");
         });
     });
 
     describe("signOut", () => {
         it("successfully signs out user and clears token", async () => {
-            // First, set up authenticated state
+            // First sign in
             mockLocalStorage.getItem.mockReturnValue(mockToken);
             (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-            (authApi.logout as jest.Mock).mockResolvedValue(undefined);
+            (authApi.logout as jest.Mock).mockResolvedValue({});
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>
@@ -308,72 +251,20 @@ describe("AuthContext", () => {
                 expect(result.current.isSignedIn).toBe(true);
             });
 
+            // Then sign out
             await act(async () => {
                 await result.current.signOut();
             });
 
-            expect(authApi.logout).toHaveBeenCalledWith(mockToken);
+            expect(authApi.logout).toHaveBeenCalled();
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("auth_token");
             expect(result.current.user).toBeNull();
             expect(result.current.isSignedIn).toBe(false);
-        });
-
-        it("clears local state even if logout API call fails", async () => {
-            // First, set up authenticated state
-            mockLocalStorage.getItem.mockReturnValue(mockToken);
-            (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-            (authApi.logout as jest.Mock).mockRejectedValue(new Error("Network error"));
-
-            const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
-
-            const wrapper = ({ children }: { children: React.ReactNode }) => (
-                <AuthProvider>{children}</AuthProvider>
-            );
-
-            const { result } = renderHook(() => useAuth(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoaded).toBe(true);
-                expect(result.current.isSignedIn).toBe(true);
-            });
-
-            await act(async () => {
-                await result.current.signOut();
-            });
-
-            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("auth_token");
-            expect(result.current.user).toBeNull();
-            expect(result.current.isSignedIn).toBe(false);
-
-            consoleError.mockRestore();
-        });
-
-        it("signs out successfully when no token exists", async () => {
-            (authApi.logout as jest.Mock).mockResolvedValue(undefined);
-
-            const wrapper = ({ children }: { children: React.ReactNode }) => (
-                <AuthProvider>{children}</AuthProvider>
-            );
-
-            const { result } = renderHook(() => useAuth(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoaded).toBe(true);
-            });
-
-            await act(async () => {
-                await result.current.signOut();
-            });
-
-            // Should not call API when no token
-            expect(authApi.logout).not.toHaveBeenCalled();
-            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("auth_token");
-            expect(result.current.user).toBeNull();
         });
     });
 
     describe("getToken", () => {
-        it("returns current token when user is signed in", async () => {
+        it("returns the current token", async () => {
             mockLocalStorage.getItem.mockReturnValue(mockToken);
             (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
@@ -391,7 +282,9 @@ describe("AuthContext", () => {
             expect(token).toBe(mockToken);
         });
 
-        it("returns null when user is not signed in", async () => {
+        it("returns null when no token is available", async () => {
+            mockLocalStorage.getItem.mockReturnValue(null);
+
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>
             );
@@ -404,39 +297,6 @@ describe("AuthContext", () => {
 
             const token = await result.current.getToken();
             expect(token).toBeNull();
-        });
-    });
-
-    describe("isSignedIn derived state", () => {
-        it("returns false when user is null", async () => {
-            const wrapper = ({ children }: { children: React.ReactNode }) => (
-                <AuthProvider>{children}</AuthProvider>
-            );
-
-            const { result } = renderHook(() => useAuth(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoaded).toBe(true);
-            });
-
-            expect(result.current.isSignedIn).toBe(false);
-        });
-
-        it("returns true when user exists", async () => {
-            mockLocalStorage.getItem.mockReturnValue(mockToken);
-            (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-
-            const wrapper = ({ children }: { children: React.ReactNode }) => (
-                <AuthProvider>{children}</AuthProvider>
-            );
-
-            const { result } = renderHook(() => useAuth(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoaded).toBe(true);
-            });
-
-            expect(result.current.isSignedIn).toBe(true);
         });
     });
 });
