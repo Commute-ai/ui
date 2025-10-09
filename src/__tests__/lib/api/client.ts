@@ -107,7 +107,6 @@ describe("API Client", () => {
             ).rejects.toMatchObject({
                 name: "ApiError",
                 code: "VALIDATION_ERROR",
-                statusCode: 422,
             });
         });
 
@@ -127,7 +126,6 @@ describe("API Client", () => {
             await expect(apiClient.get("/test")).rejects.toMatchObject({
                 name: "ApiError",
                 code: "SERVER_ERROR",
-                statusCode: 500,
             });
         });
 
@@ -154,26 +152,20 @@ describe("API Client", () => {
                 code: "UNKNOWN_ERROR",
             });
 
-            expect(console.error).toHaveBeenCalledWith("Unexpected API error:", randomError);
+            expect(console.error).toHaveBeenCalledWith(
+                "Unexpected API error:",
+                randomError
+            );
         });
     });
 
     describe("ApiError class", () => {
         it("creates error with all properties", () => {
-            const error = new ApiError("Test error", "TEST_CODE", 400);
+            const error = new ApiError("Test error", "SERVER_ERROR");
 
             expect(error.name).toBe("ApiError");
             expect(error.message).toBe("Test error");
-            expect(error.code).toBe("TEST_CODE");
-            expect(error.statusCode).toBe(400);
-        });
-
-        it("creates error without statusCode", () => {
-            const error = new ApiError("Test error", "TEST_CODE");
-
-            expect(error.message).toBe("Test error");
-            expect(error.code).toBe("TEST_CODE");
-            expect(error.statusCode).toBeNull();
+            expect(error.code).toBe("SERVER_ERROR");
         });
     });
 });

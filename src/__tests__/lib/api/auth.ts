@@ -41,11 +41,7 @@ describe("Auth API", () => {
         });
 
         it("propagates ApiError from apiClient", async () => {
-            const error = new ApiError(
-                "Username already exists",
-                "CONFLICT",
-                409
-            );
+            const error = new ApiError("Username already exists", "CONFLICT");
             mockApiClient.post.mockRejectedValueOnce(error);
 
             const promise = authApi.register({
@@ -57,7 +53,6 @@ describe("Auth API", () => {
             await expect(promise).rejects.toMatchObject({
                 message: "Username already exists",
                 code: "CONFLICT",
-                statusCode: 409,
             });
         });
     });
@@ -92,11 +87,7 @@ describe("Auth API", () => {
         });
 
         it("propagates ApiError for invalid credentials", async () => {
-            const error = new ApiError(
-                "Invalid credentials",
-                "UNAUTHORIZED",
-                401
-            );
+            const error = new ApiError("Invalid credentials", "UNAUTHORIZED");
             mockApiClient.request.mockRejectedValueOnce(error);
 
             const promise = authApi.login("testuser", "wrongpassword");
@@ -105,7 +96,6 @@ describe("Auth API", () => {
             await expect(promise).rejects.toMatchObject({
                 message: "Invalid credentials",
                 code: "UNAUTHORIZED",
-                statusCode: 401,
             });
         });
     });
@@ -128,7 +118,7 @@ describe("Auth API", () => {
         });
 
         it("handles logout errors gracefully", async () => {
-            const error = new ApiError("Token expired", "UNAUTHORIZED", 401);
+            const error = new ApiError("Token expired", "UNAUTHORIZED");
             mockApiClient.post.mockRejectedValueOnce(error);
 
             await expect(authApi.logout("expired-token")).rejects.toThrow(
@@ -159,8 +149,7 @@ describe("Auth API", () => {
         it("propagates ApiError for invalid token", async () => {
             const error = new ApiError(
                 "Invalid or expired token",
-                "UNAUTHORIZED",
-                401
+                "UNAUTHORIZED"
             );
             mockApiClient.get.mockRejectedValueOnce(error);
 
@@ -170,7 +159,6 @@ describe("Auth API", () => {
             await expect(promise).rejects.toMatchObject({
                 message: "Invalid or expired token",
                 code: "UNAUTHORIZED",
-                statusCode: 401,
             });
         });
     });

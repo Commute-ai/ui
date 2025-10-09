@@ -9,14 +9,23 @@ export interface ApiClientConfig {
     defaultHeaders?: Record<string, string>;
 }
 
-/**
- * Custom error class for API errors
- */
+export type ApiErrorCode =
+    | "BAD_REQUEST"
+    | "UNAUTHORIZED"
+    | "FORBIDDEN"
+    | "NOT_FOUND"
+    | "CONFLICT"
+    | "VALIDATION_ERROR"
+    | "SERVER_ERROR"
+    | "SERVICE_UNAVAILABLE"
+    | "NETWORK_ERROR"
+    | "UNKNOWN_ERROR"
+    | "HTTP_ERROR";
+
 export class ApiError extends Error {
     constructor(
         message: string,
-        public code: string,
-        public statusCode: number | null = null
+        public code: ApiErrorCode
     ) {
         super(message);
         this.name = "ApiError";
@@ -110,18 +119,13 @@ class ApiClient {
             // Non-JSON error response
             throw new ApiError(
                 `Server error (${response.status}). Please try again later.`,
-                "SERVER_ERROR",
-                response.status
+                "SERVER_ERROR"
             );
         }
 
         // Extract error message from various formats
         const message = this._extractErrorMessage(errorData, response.status);
-        throw new ApiError(
-            message,
-            this._getErrorCode(response.status),
-            response.status
-        );
+        throw new ApiError(message, this._getErrorCode(response.status));
     }
 
     /**
@@ -175,8 +179,8 @@ class ApiClient {
     /**
      * Get error code by status
      */
-    private _getErrorCode(statusCode: number): string {
-        const codes: Record<number, string> = {
+    private _getErrorCode(statusCode: number): ApiErrorCode {
+        const codes: Record<number, ApiErrorCode> = {
             400: "BAD_REQUEST",
             401: "UNAUTHORIZED",
             403: "FORBIDDEN",

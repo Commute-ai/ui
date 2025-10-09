@@ -1,4 +1,3 @@
-// lib/api/auth.ts
 import type { NewUser, User } from "@/types/user";
 
 import apiClient from "./client";
