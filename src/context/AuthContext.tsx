@@ -28,39 +28,49 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [token, setToken] = useState<string | null>(null);
 
+    // Initialize: load token from localStorage once on mount
     useEffect(() => {
-        initializeAuth();
+        const storedToken = localStorage.getItem("auth_token");
+        if (storedToken) {
+            setToken(storedToken);
+        }
+        setIsLoaded(true); // Only set loaded once we've checked localStorage
     }, []);
 
-    const initializeAuth = async () => {
-        try {
-            const storedToken = localStorage.getItem("auth_token");
-
-            if (storedToken) {
-                setToken(storedToken);
-
-                // Fetch current user using auth API
-                const userResponse = await authApi.getCurrentUser(storedToken);
-
-                // Convert API response to User with Date objects
-                setUser(userResponse);
-            }
-        } catch (error) {
-            console.error("Auth initialization error:", error);
-            // Token invalid, clear it
-            localStorage.removeItem("auth_token");
-            setToken(null);
-        } finally {
-            setIsLoaded(true);
+    // Fetch user whenever token changes
+    useEffect(() => {
+        if (!token) {
+            setUser(null);
+            return;
         }
-    };
+
+        const fetchUser = async () => {
+            try {
+                const user = await authApi.getCurrentUser(token);
+                setUser(user);
+            } catch (error) {
+                console.error("Error fetching user:", error);
+                setUser(null);
+                setToken(null); // Invalid token, clear it
+            }
+        };
+
+        fetchUser();
+    }, [token]);
+
+    // Sync token to localStorage whenever it changes
+    useEffect(() => {
+        if (token) {
+            localStorage.setItem("auth_token", token);
+        } else {
+            localStorage.removeItem("auth_token");
+        }
+    }, [token]);
 
     const signIn = async (username: string, password: string) => {
         try {
             const response = await authApi.login(username, password);
-            localStorage.setItem("auth_token", response.token);
-            setToken(response.token);
-            setUser(response.user);
+            setToken(response.access_token);
         } catch (error) {
             if (error instanceof ApiError) {
                 throw new Error(error.message);
@@ -76,9 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 password,
             });
 
-            localStorage.setItem("auth_token", response.token);
-            setToken(response.token);
-            setUser(response.user);
+            setToken(response.access_token);
         } catch (error) {
             if (error instanceof ApiError) {
                 throw new Error(error.message);
@@ -95,7 +103,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } catch (error) {
             console.error("Sign out error:", error);
         } finally {
-            localStorage.removeItem("auth_token");
             setToken(null);
             setUser(null);
         }
