@@ -1,11 +1,14 @@
 import React from "react";
 
-import { renderHook, waitFor, act } from "@testing-library/react-native";
-import { AuthProvider } from "@/context/AuthContext";
-import { useAuth } from "@/hooks/useAuth";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
+
 import authApi from "@/lib/api/auth";
-import type { User } from "@/types/user";
+
+import { useAuth } from "@/hooks/useAuth";
+
+import { AuthProvider } from "@/context/AuthContext";
 import { ApiError } from "@/types/api";
+import type { User } from "@/types/user";
 
 // Mock the auth API
 jest.mock("@/lib/api/auth");
@@ -43,7 +46,9 @@ describe("AuthContext", () => {
     describe("useAuth hook", () => {
         it("throws error when used outside AuthProvider", () => {
             // Suppress console.error for this test
-            const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+            const consoleError = jest
+                .spyOn(console, "error")
+                .mockImplementation(() => {});
 
             expect(() => {
                 renderHook(() => useAuth());
@@ -108,7 +113,9 @@ describe("AuthContext", () => {
                 new Error("Invalid token")
             );
 
-            const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+            const consoleError = jest
+                .spyOn(console, "error")
+                .mockImplementation(() => {});
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>
@@ -120,7 +127,9 @@ describe("AuthContext", () => {
                 expect(result.current.isLoaded).toBe(true);
             });
 
-            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("auth_token");
+            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+                "auth_token"
+            );
             expect(result.current.user).toBeNull();
             expect(result.current.isSignedIn).toBe(false);
 
@@ -151,14 +160,23 @@ describe("AuthContext", () => {
                 await result.current.signIn("testuser", "password123");
             });
 
-            expect(authApi.login).toHaveBeenCalledWith("testuser", "password123");
-            expect(mockLocalStorage.setItem).toHaveBeenCalledWith("auth_token", mockToken);
+            expect(authApi.login).toHaveBeenCalledWith(
+                "testuser",
+                "password123"
+            );
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+                "auth_token",
+                mockToken
+            );
             expect(result.current.user).toEqual(mockUser);
             expect(result.current.isSignedIn).toBe(true);
         });
 
         it("throws error on login failure", async () => {
-            const mockError = new ApiError("Invalid credentials", "UNAUTHORIZED");
+            const mockError = new ApiError(
+                "Invalid credentials",
+                "UNAUTHORIZED"
+            );
             (authApi.login as jest.Mock).mockRejectedValue(mockError);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -206,13 +224,19 @@ describe("AuthContext", () => {
                 username: "newuser",
                 password: "password123",
             });
-            expect(mockLocalStorage.setItem).toHaveBeenCalledWith("auth_token", mockToken);
+            expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+                "auth_token",
+                mockToken
+            );
             expect(result.current.user).toEqual(mockUser);
             expect(result.current.isSignedIn).toBe(true);
         });
 
         it("throws error on registration failure", async () => {
-            const mockError = new ApiError("Username already exists", "CONFLICT");
+            const mockError = new ApiError(
+                "Username already exists",
+                "CONFLICT"
+            );
             (authApi.register as jest.Mock).mockRejectedValue(mockError);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -257,7 +281,9 @@ describe("AuthContext", () => {
             });
 
             expect(authApi.logout).toHaveBeenCalled();
-            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("auth_token");
+            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+                "auth_token"
+            );
             expect(result.current.user).toBeNull();
             expect(result.current.isSignedIn).toBe(false);
         });

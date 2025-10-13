@@ -29,7 +29,7 @@ describe("SignInForm", () => {
             signUp: jest.fn(),
             signOut: jest.fn(),
             getToken: jest.fn(),
-        })
+        });
     });
 
     it("renders correctly with all form elements", () => {
@@ -56,9 +56,7 @@ describe("SignInForm", () => {
     it("calls signIn with correct credentials on submit", async () => {
         mockSignIn.mockResolvedValueOnce(undefined);
 
-        const { getByTestId, getByText } = render(
-            <SignInForm />
-        );
+        const { getByTestId, getByText } = render(<SignInForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "testuser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -73,9 +71,7 @@ describe("SignInForm", () => {
         const error = new Error("Username not found");
         mockSignIn.mockRejectedValueOnce(error);
 
-        const { getByTestId, getByText } = render(
-            <SignInForm />
-        );
+        const { getByTestId, getByText } = render(<SignInForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "wronguser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -90,9 +86,7 @@ describe("SignInForm", () => {
         const error = new Error("Invalid credentials");
         mockSignIn.mockRejectedValueOnce(error);
 
-        const { getByTestId, getByText } = render(
-            <SignInForm />
-        );
+        const { getByTestId, getByText } = render(<SignInForm />);
         fireEvent.changeText(getByTestId("username-input"), "testuser");
         fireEvent.changeText(getByTestId("password-input"), "wrongpassword");
         fireEvent.press(getByText("Continue"));
@@ -111,9 +105,7 @@ describe("SignInForm", () => {
             .spyOn(console, "error")
             .mockImplementation(() => {});
 
-        const { getByTestId, getByText } = render(
-            <SignInForm />
-        );
+        const { getByTestId, getByText } = render(<SignInForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "testuser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -131,8 +123,7 @@ describe("SignInForm", () => {
             () => new Promise((resolve) => setTimeout(resolve, 100))
         );
 
-        const { getByTestId, getByText, queryByText } =
-            render(<SignInForm />);
+        const { getByTestId, getByText, queryByText } = render(<SignInForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "testuser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -169,8 +160,7 @@ describe("SignInForm", () => {
     });
 
     it("clears previous errors on new submission", async () => {
-        const { getByTestId, getByText, queryByText } =
-            render(<SignInForm />);
+        const { getByTestId, getByText, queryByText } = render(<SignInForm />);
 
         // First submission with error
         mockSignIn.mockRejectedValueOnce(new Error("Invalid credentials"));
@@ -192,6 +182,5 @@ describe("SignInForm", () => {
             expect(mockSignIn).toHaveBeenCalledTimes(2);
             expect(queryByText("Invalid credentials")).toBeNull();
         });
-
     });
 });

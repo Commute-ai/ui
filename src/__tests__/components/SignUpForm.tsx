@@ -56,9 +56,7 @@ describe("SignUpForm", () => {
     it("calls signUp with correct credentials on submit", async () => {
         mockSignUp.mockResolvedValueOnce(undefined);
 
-        const { getByTestId, getByText } = render(
-            <SignUpForm />
-        );
+        const { getByTestId, getByText } = render(<SignUpForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "newuser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -73,9 +71,7 @@ describe("SignUpForm", () => {
         const error = new Error("Username already exists");
         mockSignUp.mockRejectedValueOnce(error);
 
-        const { getByTestId, getByText } = render(
-            <SignUpForm />
-        );
+        const { getByTestId, getByText } = render(<SignUpForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "existinguser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -90,9 +86,7 @@ describe("SignUpForm", () => {
         const error = new Error("Password must be at least 8 characters");
         mockSignUp.mockRejectedValueOnce(error);
 
-        const { getByTestId, getByText } = render(
-            <SignUpForm />
-        );
+        const { getByTestId, getByText } = render(<SignUpForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "newuser");
         fireEvent.changeText(getByTestId("password-input"), "short");
@@ -114,9 +108,7 @@ describe("SignUpForm", () => {
             .spyOn(console, "error")
             .mockImplementation(() => {});
 
-        const { getByTestId, getByText } = render(
-            <SignUpForm />
-        );
+        const { getByTestId, getByText } = render(<SignUpForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "newuser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -134,8 +126,7 @@ describe("SignUpForm", () => {
             () => new Promise((resolve) => setTimeout(resolve, 100))
         );
 
-        const { getByTestId, getByText, queryByText } =
-            render(<SignUpForm />);
+        const { getByTestId, getByText, queryByText } = render(<SignUpForm />);
 
         fireEvent.changeText(getByTestId("username-input"), "newuser");
         fireEvent.changeText(getByTestId("password-input"), "password123");
@@ -173,8 +164,7 @@ describe("SignUpForm", () => {
     });
 
     it("clears previous errors on new submission", async () => {
-        const { getByTestId, getByText, queryByText } =
-            render(<SignUpForm />);
+        const { getByTestId, getByText, queryByText } = render(<SignUpForm />);
 
         // First submission with error
         mockSignUp.mockRejectedValueOnce(new Error("Username already exists"));

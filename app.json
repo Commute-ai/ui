@@ -1,55 +1,50 @@
 {
-  "expo": {
-    "name": "Commute AI",
-    "slug": "commuteai-ui",
-    "version": "0.2.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.commuteai.app"
-    },
-    "android": {
-      "edgeToEdgeEnabled": true,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.commuteai.app"
-    },
-    "web": {
-      "favicon": "./assets/images/favicon.png",
-      "bundler": "metro",
-      "output": "single"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-web-browser"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "65c7b38d-2455-4148-92f3-b3f39a877324"
-      }
-    },
-    "experiments": {
-      "typedRoutes": true
-    },
-    "owner": "commuteai",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/65c7b38d-2455-4148-92f3-b3f39a877324"
+    "expo": {
+        "name": "Commute AI",
+        "slug": "commuteai-ui",
+        "version": "0.2.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon.png",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "splash": {
+            "image": "./assets/images/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "assetBundlePatterns": ["**/*"],
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.commuteai.app"
+        },
+        "android": {
+            "edgeToEdgeEnabled": true,
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.commuteai.app"
+        },
+        "web": {
+            "favicon": "./assets/images/favicon.png",
+            "bundler": "metro",
+            "output": "single"
+        },
+        "plugins": ["expo-router", "expo-web-browser"],
+        "extra": {
+            "eas": {
+                "projectId": "65c7b38d-2455-4148-92f3-b3f39a877324"
+            }
+        },
+        "experiments": {
+            "typedRoutes": true
+        },
+        "owner": "commuteai",
+        "runtimeVersion": {
+            "policy": "appVersion"
+        },
+        "updates": {
+            "url": "https://u.expo.dev/65c7b38d-2455-4148-92f3-b3f39a877324"
+        }
     }
-  }
 }

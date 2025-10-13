@@ -1,6 +1,5 @@
-import type { NewUser, User } from "@/types/user";
-
 import apiClient from "./client";
+import type { NewUser, User } from "@/types/user";
 
 export interface AuthResponse {
     token: string;
