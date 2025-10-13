@@ -1,4 +1,5 @@
 import React, { ReactNode, createContext, useEffect, useState } from "react";
+import { Platform } from "react-native";
 
 import * as SecureStore from "expo-secure-store";
 
@@ -27,6 +28,44 @@ interface AuthProviderProps {
 
 const AUTH_TOKEN_KEY = "auth_token";
 
+// Helper for platform-specific storage
+const tokenStorage = {
+    getItem: async () => {
+        if (Platform.OS === 'web') {
+            try {
+                return localStorage.getItem(AUTH_TOKEN_KEY);
+            } catch (e) {
+                console.error("localStorage is not available.", e);
+                return null;
+            }
+        }
+        return SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+    },
+    setItem: async (token: string) => {
+        if (Platform.OS === 'web') {
+            try {
+                localStorage.setItem(AUTH_TOKEN_KEY, token);
+            } catch (e) {
+                console.error("localStorage is not available.", e);
+            }
+        } else {
+            await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
+        }
+    },
+    deleteItem: async () => {
+        if (Platform.OS === 'web') {
+            try {
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+            } catch (e) {
+                console.error("localStorage is not available.", e);
+            }
+        } else {
+            await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+        }
+    },
+};
+
+
 export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -36,8 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
         const initialize = async () => {
             try {
-                const storedToken =
-                    await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+                const storedToken = await tokenStorage.getItem();
 
                 if (storedToken) {
                     try {
@@ -47,7 +85,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     } catch (error) {
                         console.error("Error fetching user on init:", error);
                         // Token is invalid, clear it
-                        await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                        await tokenStorage.deleteItem();
                     }
                 }
             } catch (error) {
@@ -90,9 +128,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const syncToken = async () => {
             try {
                 if (token) {
-                    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
+                    await tokenStorage.setItem(token);
                 } else {
-                    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                    await tokenStorage.deleteItem();
                 }
             } catch (error) {
                 console.error("Error writing to SecureStore:", error);
@@ -139,7 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const getToken = async (): Promise<string | null> => {
         try {
-            return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+            return await tokenStorage.getItem();
         } catch (error) {
             console.error("Error getting token:", error);
             return null;

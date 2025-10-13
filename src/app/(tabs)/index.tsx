@@ -1,5 +1,9 @@
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
-export default function IndexScreen() {
-    return <View className="flex-1 justify-center p-4">Hello</View>;
+export default function Home() {
+    return (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text>Hello</Text>
+        </View>
+    );
 }
