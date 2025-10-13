@@ -28,17 +28,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [token, setToken] = useState<string | null>(null);
 
-    // Initialize: load token from localStorage once on mount
+    // Initialize: load token from localStorage and fetch user if token exists
     useEffect(() => {
-        const storedToken = localStorage.getItem("auth_token");
-        if (storedToken) {
-            setToken(storedToken);
-        }
-        setIsLoaded(true); // Only set loaded once we've checked localStorage
+        const initialize = async () => {
+            const storedToken = localStorage.getItem("auth_token");
+
+            if (storedToken) {
+                try {
+                    const user = await authApi.getCurrentUser(storedToken);
+                    setUser(user);
+                    setToken(storedToken);
+                } catch (error) {
+                    console.error("Error fetching user on init:", error);
+                    // Token is invalid, clear it
+                    localStorage.removeItem("auth_token");
+                }
+            }
+
+            setIsLoaded(true); // Now we're truly loaded
+        };
+
+        initialize();
     }, []);
 
     // Fetch user whenever token changes
     useEffect(() => {
+        if (!isLoaded) return; // Wait until initial load is done
+
         if (!token) {
             setUser(null);
             return;
@@ -56,16 +72,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
 
         fetchUser();
-    }, [token]);
+    }, [token, isLoaded]);
 
     // Sync token to localStorage whenever it changes
     useEffect(() => {
+        if (!isLoaded) return; // Wait until initial load is done
+
         if (token) {
             localStorage.setItem("auth_token", token);
         } else {
             localStorage.removeItem("auth_token");
         }
-    }, [token]);
+    }, [token, isLoaded]);
 
     const signIn = async (username: string, password: string) => {
         try {

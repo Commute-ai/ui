@@ -140,11 +140,11 @@ describe("AuthContext", () => {
     describe("signIn", () => {
         it("successfully signs in user and stores token", async () => {
             const mockResponse = {
-                token: mockToken,
-                user: mockUser,
+                access_token: mockToken,
             };
 
             (authApi.login as jest.Mock).mockResolvedValue(mockResponse);
+            (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>
@@ -200,11 +200,11 @@ describe("AuthContext", () => {
     describe("signUp", () => {
         it("successfully signs up user and stores token", async () => {
             const mockResponse = {
-                token: mockToken,
-                user: mockUser,
+                access_token: mockToken,
             };
 
             (authApi.register as jest.Mock).mockResolvedValue(mockResponse);
+            (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>

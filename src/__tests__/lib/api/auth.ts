@@ -16,13 +16,8 @@ describe("Auth API", () => {
 
     describe("register", () => {
         it("calls apiClient.post with correct endpoint and data", async () => {
-            const mockUser: User = {
-                id: "1",
-                username: "testuser",
-            };
             const mockResponse: AuthResponse = {
-                token: "token123",
-                user: mockUser,
+                access_token: "token123",
             };
 
             mockApiClient.post.mockResolvedValueOnce(mockResponse);
@@ -32,10 +27,15 @@ describe("Auth API", () => {
                 password: "password123",
             });
 
-            expect(mockApiClient.post).toHaveBeenCalledWith("/auth/register", {
-                username: "testuser",
-                password: "password123",
-            });
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                "/auth/register",
+                {
+                    username: "testuser",
+                    password: "password123",
+                },
+                expect.anything(),
+                expect.anything()
+            );
             expect(result).toEqual(mockResponse);
         });
 
@@ -58,13 +58,8 @@ describe("Auth API", () => {
 
     describe("login", () => {
         it("calls apiClient.request with correct endpoint and data", async () => {
-            const mockUser: User = {
-                id: "1",
-                username: "testuser",
-            };
             const mockResponse: AuthResponse = {
-                token: "token123",
-                user: mockUser,
+                access_token: "token123",
             };
 
             mockApiClient.request.mockResolvedValueOnce(mockResponse);
@@ -75,13 +70,17 @@ describe("Auth API", () => {
             body.append("username", "testuser");
             body.append("password", "password123");
 
-            expect(mockApiClient.request).toHaveBeenCalledWith("/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
+            expect(apiClient.request).toHaveBeenCalledWith(
+                "/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: body.toString(),
                 },
-                body: body.toString(),
-            });
+                expect.anything(),
+            );
             expect(result).toEqual(mockResponse);
         });
 
@@ -137,11 +136,15 @@ describe("Auth API", () => {
 
             const result = await authApi.getCurrentUser("token123");
 
-            expect(mockApiClient.get).toHaveBeenCalledWith("/auth/me", {
-                headers: {
-                    Authorization: "Bearer token123",
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                "/users/me",
+                {
+                    headers: {
+                        Authorization: "Bearer token123",
+                    },
                 },
-            });
+                expect.anything()
+            );
             expect(result).toEqual(mockUser);
         });
 

@@ -12,13 +12,19 @@ export type AuthResponse = z.infer<typeof AuthResponseSchema>;
 
 const authApi = {
     async login(username: string, password: string): Promise<AuthResponse> {
-        return apiClient.post<AuthResponse>(
+        const body = new URLSearchParams();
+        body.append("username", username);
+        body.append("password", password);
+
+        return apiClient.request(
             "/auth/login",
             {
-                username,
-                password,
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: body.toString(),
             },
-            {},
             AuthResponseSchema
         );
     },

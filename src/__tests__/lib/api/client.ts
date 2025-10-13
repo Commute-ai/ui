@@ -1,18 +1,15 @@
-import apiClient, { ApiError } from "@/lib/api/client";
+import apiClient from "@/lib/api/client";
+
+import { ApiError } from "@/types/api";
 
 // Set up global mocks first
 global.fetch = jest.fn();
-
-// Mock dependencies
-jest.mock("expo-constants", () => ({
-    expoConfig: { updates: { channel: null } },
-}));
 
 jest.mock("react-native", () => ({
     Platform: { OS: "web" },
 }));
 
-jest.mock("@/lib/config/environment", () => ({
+jest.mock("@/lib/config", () => ({
     __esModule: true,
     default: { apiUrl: "http://localhost:8000/api/v1" },
 }));
