@@ -1,67 +1,64 @@
 import React from "react";
 
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
-const UserProfileHeader = ({ user, isLoading, error }) => {
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Text } from "@/components/ui/text";
+
+interface User {
+    username: string;
+    // Add other user properties as needed
+}
+
+interface UserProfileHeaderProps {
+    user: User | null;
+    isLoading: boolean;
+    error: string | null;
+}
+
+const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
+    user,
+    isLoading,
+    error,
+}) => {
     return (
-        <View style={styles.container}>
-            {isLoading ? (
-                <ActivityIndicator
-                    testID="activity-indicator"
-                    size="small"
-                    color="#0000ff"
-                />
-            ) : error ? (
-                <Text style={styles.errorText}>{error}</Text>
-            ) : (
-                user && (
-                    <>
-                        <View style={styles.avatar} />
-                        <View style={styles.userInfo}>
-                            <Text style={styles.username}>{user.username}</Text>
-                            <Text style={styles.status}>Logged in</Text>
-                        </View>
-                    </>
-                )
-            )}
+        <View className="w-full">
+            <Card className="rounded-none border-x-0 border-t-0 shadow-sm">
+                <CardContent className="min-h-[72px] flex-row items-center justify-center py-3">
+                    {isLoading ? (
+                        <ActivityIndicator
+                            testID="activity-indicator"
+                            size="small"
+                            color="#0000ff"
+                        />
+                    ) : error ? (
+                        <Text className="text-sm text-destructive">
+                            {error}
+                        </Text>
+                    ) : (
+                        user && (
+                            <View className="flex-1 flex-row items-center gap-3">
+                                {/* Avatar */}
+                                <View className="h-12 w-12 rounded-full bg-muted" />
+
+                                {/* User Info */}
+                                <View className="flex-1">
+                                    <Text className="text-lg font-bold">
+                                        {user.username}
+                                    </Text>
+                                    <Text className="text-sm text-muted-foreground">
+                                        Logged in
+                                    </Text>
+                                </View>
+                            </View>
+                        )
+                    )}
+                </CardContent>
+            </Card>
+            <Separator />
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 10,
-        backgroundColor: "#f8f8f8",
-        borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
-        width: "100%",
-        justifyContent: "center",
-        minHeight: 72, // Same height as the loaded header to avoid layout shifts
-    },
-    avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: "#ccc",
-        marginRight: 10,
-    },
-    userInfo: {
-        flex: 1,
-    },
-    username: {
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-    status: {
-        fontSize: 14,
-        color: "green",
-    },
-    errorText: {
-        color: "red",
-        fontSize: 14,
-    },
-});
 
 export default UserProfileHeader;
