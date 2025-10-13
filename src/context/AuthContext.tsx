@@ -1,7 +1,7 @@
 import React, { ReactNode, createContext, useEffect, useState } from "react";
-import { Platform } from "react-native";
 
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
 import authApi from "@/lib/api/auth";
 
@@ -31,7 +31,7 @@ const AUTH_TOKEN_KEY = "auth_token";
 // Helper for platform-specific storage
 const tokenStorage = {
     getItem: async () => {
-        if (Platform.OS === 'web') {
+        if (Platform.OS === "web") {
             try {
                 return localStorage.getItem(AUTH_TOKEN_KEY);
             } catch (e) {
@@ -42,7 +42,7 @@ const tokenStorage = {
         return SecureStore.getItemAsync(AUTH_TOKEN_KEY);
     },
     setItem: async (token: string) => {
-        if (Platform.OS === 'web') {
+        if (Platform.OS === "web") {
             try {
                 localStorage.setItem(AUTH_TOKEN_KEY, token);
             } catch (e) {
@@ -53,7 +53,7 @@ const tokenStorage = {
         }
     },
     deleteItem: async () => {
-        if (Platform.OS === 'web') {
+        if (Platform.OS === "web") {
             try {
                 localStorage.removeItem(AUTH_TOKEN_KEY);
             } catch (e) {
@@ -64,7 +64,6 @@ const tokenStorage = {
         }
     },
 };
-
 
 export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);

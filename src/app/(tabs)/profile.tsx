@@ -1,11 +1,12 @@
-import { useRouter } from "expo-router";
 import React from "react";
+
+import { useRouter } from "expo-router";
 import { Button, Text, View } from "react-native";
 
 const ProfileScreen = () => {
     const router = useRouter();
     return (
-        <View className="flex-1 justify-center items-center">
+        <View className="flex-1 items-center justify-center">
             <Text className="text-xl">Profile Screen</Text>
             <Button
                 title="Go to Settings"

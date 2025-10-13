@@ -1,6 +1,6 @@
-import { Link } from "expo-router";
 import React from "react";
 
+import { Link } from "expo-router";
 import { LogOut } from "lucide-react-native";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 
@@ -32,9 +32,7 @@ const UserProfileHeader: React.FC = () => {
                 user && (
                     <>
                         <Link href="/profile" asChild>
-                            <TouchableOpacity
-                                className="flex-1 flex-row items-center gap-3"
-                            >
+                            <TouchableOpacity className="flex-1 flex-row items-center gap-3">
                                 {/* Avatar */}
                                 <View
                                     className="h-10 w-10 rounded-full bg-muted"
