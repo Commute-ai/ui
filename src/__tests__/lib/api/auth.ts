@@ -79,7 +79,7 @@ describe("Auth API", () => {
                     },
                     body: body.toString(),
                 },
-                expect.anything(),
+                expect.anything()
             );
             expect(result).toEqual(mockResponse);
         });

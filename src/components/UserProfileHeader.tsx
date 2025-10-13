@@ -1,15 +1,16 @@
 import React from "react";
 
-import { ActivityIndicator, View } from "react-native";
+import { LogOut } from "lucide-react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+
+import { useAuth } from "@/hooks/useAuth";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 import { Separator } from "@/components/ui/separator";
 import { Text } from "@/components/ui/text";
 
-interface User {
-    username: string;
-    // Add other user properties as needed
-}
+import { User } from "@/types/user";
 
 interface UserProfileHeaderProps {
     user: User | null;
@@ -22,6 +23,16 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     isLoading,
     error,
 }) => {
+    const { signOut } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await signOut();
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
     return (
         <View className="w-full">
             <Card className="rounded-none border-x-0 border-t-0 shadow-sm">
@@ -51,6 +62,19 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                                         Logged in
                                     </Text>
                                 </View>
+
+                                {/* Logout Button */}
+                                <TouchableOpacity
+                                    onPress={handleLogout}
+                                    className="rounded-lg bg-destructive p-2.5"
+                                    testID="logout-button"
+                                >
+                                    <Icon
+                                        as={LogOut}
+                                        className="text-destructive-foreground"
+                                        size={20}
+                                    />
+                                </TouchableOpacity>
                             </View>
                         )
                     )}
