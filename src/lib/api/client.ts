@@ -1,4 +1,8 @@
-import config from "@/lib/config/environment";
+import { z } from "zod";
+
+import config from "@/lib/config";
+
+import { ApiError, ApiErrorCode } from "@/types/api";
 
 export interface RequestOptions extends RequestInit {
     headers?: Record<string, string>;
@@ -7,29 +11,6 @@ export interface RequestOptions extends RequestInit {
 export interface ApiClientConfig {
     baseUrl: string;
     defaultHeaders?: Record<string, string>;
-}
-
-export type ApiErrorCode =
-    | "BAD_REQUEST"
-    | "UNAUTHORIZED"
-    | "FORBIDDEN"
-    | "NOT_FOUND"
-    | "CONFLICT"
-    | "VALIDATION_ERROR"
-    | "SERVER_ERROR"
-    | "SERVICE_UNAVAILABLE"
-    | "NETWORK_ERROR"
-    | "UNKNOWN_ERROR"
-    | "HTTP_ERROR";
-
-export class ApiError extends Error {
-    constructor(
-        message: string,
-        public code: ApiErrorCode
-    ) {
-        super(message);
-        this.name = "ApiError";
-    }
 }
 
 /**
@@ -49,11 +30,12 @@ class ApiClient {
     }
 
     /**
-     * Main request method
+     * Main request method with optional Zod schema validation
      */
     async request<T = any>(
         endpoint: string,
-        options: RequestOptions = {}
+        options: RequestOptions = {},
+        schema?: z.ZodSchema<T>
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
 
@@ -75,11 +57,34 @@ class ApiClient {
 
             // Parse successful response
             const contentType = response.headers.get("content-type");
+            let data: any;
+
             if (contentType && contentType.includes("application/json")) {
-                return (await response.json()) as T;
+                data = await response.json();
+            } else {
+                data = await response.text();
             }
 
-            return (await response.text()) as T;
+            // Validate with Zod schema if provided
+            if (schema) {
+                try {
+                    return schema.parse(data);
+                } catch (error) {
+                    if (error instanceof z.ZodError) {
+                        console.error(
+                            "Response validation failed:",
+                            error.errors
+                        );
+                        throw new ApiError(
+                            "Invalid response format from server",
+                            "VALIDATION_ERROR"
+                        );
+                    }
+                    throw error;
+                }
+            }
+
+            return data as T;
         } catch (error) {
             // Handle network errors
             if (
@@ -194,55 +199,76 @@ class ApiClient {
         return codes[statusCode] || "HTTP_ERROR";
     }
 
-    // Convenience methods with proper TypeScript generics
+    // Convenience methods with optional schema validation
     async get<T = any>(
         endpoint: string,
-        options: RequestOptions = {}
+        options: RequestOptions = {},
+        schema?: z.ZodSchema<T>
     ): Promise<T> {
-        return this.request<T>(endpoint, { ...options, method: "GET" });
+        return this.request<T>(endpoint, { ...options, method: "GET" }, schema);
     }
 
     async post<T = any>(
         endpoint: string,
         data?: any,
-        options: RequestOptions = {}
+        options: RequestOptions = {},
+        schema?: z.ZodSchema<T>
     ): Promise<T> {
-        return this.request<T>(endpoint, {
-            ...options,
-            method: "POST",
-            body: data ? JSON.stringify(data) : undefined,
-        });
+        return this.request<T>(
+            endpoint,
+            {
+                ...options,
+                method: "POST",
+                body: data ? JSON.stringify(data) : undefined,
+            },
+            schema
+        );
     }
 
     async put<T = any>(
         endpoint: string,
         data?: any,
-        options: RequestOptions = {}
+        options: RequestOptions = {},
+        schema?: z.ZodSchema<T>
     ): Promise<T> {
-        return this.request<T>(endpoint, {
-            ...options,
-            method: "PUT",
-            body: data ? JSON.stringify(data) : undefined,
-        });
+        return this.request<T>(
+            endpoint,
+            {
+                ...options,
+                method: "PUT",
+                body: data ? JSON.stringify(data) : undefined,
+            },
+            schema
+        );
     }
 
     async delete<T = any>(
         endpoint: string,
-        options: RequestOptions = {}
+        options: RequestOptions = {},
+        schema?: z.ZodSchema<T>
     ): Promise<T> {
-        return this.request<T>(endpoint, { ...options, method: "DELETE" });
+        return this.request<T>(
+            endpoint,
+            { ...options, method: "DELETE" },
+            schema
+        );
     }
 
     async patch<T = any>(
         endpoint: string,
         data?: any,
-        options: RequestOptions = {}
+        options: RequestOptions = {},
+        schema?: z.ZodSchema<T>
     ): Promise<T> {
-        return this.request<T>(endpoint, {
-            ...options,
-            method: "PATCH",
-            body: data ? JSON.stringify(data) : undefined,
-        });
+        return this.request<T>(
+            endpoint,
+            {
+                ...options,
+                method: "PATCH",
+                body: data ? JSON.stringify(data) : undefined,
+            },
+            schema
+        );
     }
 }
 
