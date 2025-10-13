@@ -3,7 +3,10 @@ import { z } from "zod";
 export const UserSchema = z.object({
     id: z.number(),
     username: z.string().min(3).max(30),
-    created_at: z.string().refine((date) => !isNaN(Date.parse(date))),
+    created_at: z
+        .string()
+        .refine((date) => !isNaN(Date.parse(date)))
+        .optional(),
 });
 
 export const NewUserSchema = UserSchema.extend({

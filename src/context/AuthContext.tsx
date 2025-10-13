@@ -1,9 +1,11 @@
 import React, { ReactNode, createContext, useEffect, useState } from "react";
 
+import * as SecureStore from "expo-secure-store";
+
 import authApi from "@/lib/api/auth";
 
 import { ApiError } from "@/types/api";
-import type { User } from "@/types/user";
+import { NewUserSchema, type User } from "@/types/user";
 
 export interface AuthContextType {
     user: User | null;
@@ -23,29 +25,36 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+const AUTH_TOKEN_KEY = "auth_token";
+
 export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [token, setToken] = useState<string | null>(null);
 
-    // Initialize: load token from localStorage and fetch user if token exists
+    // Initialize: load token from SecureStore and fetch user if token exists
     useEffect(() => {
         const initialize = async () => {
-            const storedToken = localStorage.getItem("auth_token");
+            try {
+                const storedToken =
+                    await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
 
-            if (storedToken) {
-                try {
-                    const user = await authApi.getCurrentUser(storedToken);
-                    setUser(user);
-                    setToken(storedToken);
-                } catch (error) {
-                    console.error("Error fetching user on init:", error);
-                    // Token is invalid, clear it
-                    localStorage.removeItem("auth_token");
+                if (storedToken) {
+                    try {
+                        const user = await authApi.getCurrentUser(storedToken);
+                        setUser(user);
+                        setToken(storedToken);
+                    } catch (error) {
+                        console.error("Error fetching user on init:", error);
+                        // Token is invalid, clear it
+                        await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                    }
                 }
+            } catch (error) {
+                console.error("Error reading from SecureStore:", error);
             }
 
-            setIsLoaded(true); // Now we're truly loaded
+            setIsLoaded(true);
         };
 
         initialize();
@@ -53,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Fetch user whenever token changes
     useEffect(() => {
-        if (!isLoaded) return; // Wait until initial load is done
+        if (!isLoaded) return;
 
         if (!token) {
             setUser(null);
@@ -67,22 +76,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
             } catch (error) {
                 console.error("Error fetching user:", error);
                 setUser(null);
-                setToken(null); // Invalid token, clear it
+                setToken(null);
             }
         };
 
         fetchUser();
     }, [token, isLoaded]);
 
-    // Sync token to localStorage whenever it changes
+    // Sync token to SecureStore whenever it changes
     useEffect(() => {
-        if (!isLoaded) return; // Wait until initial load is done
+        if (!isLoaded) return;
 
-        if (token) {
-            localStorage.setItem("auth_token", token);
-        } else {
-            localStorage.removeItem("auth_token");
-        }
+        const syncToken = async () => {
+            try {
+                if (token) {
+                    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
+                } else {
+                    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+                }
+            } catch (error) {
+                console.error("Error writing to SecureStore:", error);
+            }
+        };
+
+        syncToken();
     }, [token, isLoaded]);
 
     const signIn = async (username: string, password: string) => {
@@ -99,11 +116,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const signUp = async (username: string, password: string) => {
         try {
-            const response = await authApi.register({
-                username,
-                password,
-            });
-
+            const newUser = NewUserSchema.parse({ username, password });
+            const response = await authApi.register(newUser);
             setToken(response.access_token);
         } catch (error) {
             if (error instanceof ApiError) {
@@ -115,32 +129,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const signOut = async () => {
         try {
-            if (token) {
-                await authApi.logout(token);
-            }
-        } catch (error) {
-            console.error("Sign out error:", error);
-        } finally {
             setToken(null);
             setUser(null);
+        } catch (error) {
+            console.error("Error during sign out:", error);
+            throw new Error("Sign out failed. Please try again.");
         }
     };
 
     const getToken = async (): Promise<string | null> => {
-        return token;
-    };
-
-    const value: AuthContextType = {
-        user,
-        isLoaded,
-        isSignedIn: !!user,
-        signIn,
-        signUp,
-        signOut,
-        getToken,
+        try {
+            return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+        } catch (error) {
+            console.error("Error getting token:", error);
+            return null;
+        }
     };
 
     return (
-        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+        <AuthContext.Provider
+            value={{
+                user,
+                isLoaded,
+                isSignedIn: !!user,
+                signIn,
+                signUp,
+                signOut,
+                getToken,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
     );
 }

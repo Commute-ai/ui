@@ -3,6 +3,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { NAV_THEME } from "@/lib/theme";
 
@@ -48,8 +49,10 @@ const RootLayoutNav = () => {
 };
 export default function RootLayout() {
     return (
-        <AuthProvider>
-            <RootLayoutNav />
-        </AuthProvider>
+        <SafeAreaProvider>
+            <AuthProvider>
+                <RootLayoutNav />
+            </AuthProvider>
+        </SafeAreaProvider>
     );
 }
