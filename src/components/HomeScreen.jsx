@@ -4,6 +4,7 @@ import React, { useContext } from "react";
 
 import { StatusBar } from "expo-status-bar";
 import { Button, StyleSheet, Text, View } from "react-native";
+import {RouteForm} from "./RouteForm";
 
 const HomeScreen = ({ navigation }) => {
     const { isLoggedIn, logout } = useContext(AuthContext);
@@ -15,6 +16,7 @@ const HomeScreen = ({ navigation }) => {
                 {isLoggedIn ? (
                     <>
                         <Text>You are logged in!</Text>
+                        <RouteForm/>
                         <Button title="Logout" onPress={logout} />
                         <Button
                             title="Go to Profile"
