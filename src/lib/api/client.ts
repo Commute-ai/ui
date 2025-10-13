@@ -89,7 +89,9 @@ class ApiClient {
             // Handle network errors
             if (
                 error instanceof TypeError &&
-                error.message.includes("Failed to fetch")
+                (error.message.includes("Failed to fetch") ||
+                    error.message.includes("NetworkError") ||
+                    error.message.includes("Network request failed"))
             ) {
                 throw new ApiError(
                     "Network error. Please check your connection.",
