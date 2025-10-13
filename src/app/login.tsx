@@ -1,6 +1,6 @@
 import { ScrollView, View } from "react-native";
 
-import { SignInForm } from "@/components/sign-in-form";
+import { SignInForm } from "@/components/SignInForm";
 
 export default function LoginScreen() {
     return (

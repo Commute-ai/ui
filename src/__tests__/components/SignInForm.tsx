@@ -4,7 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { useAuth } from "@/hooks/useAuth";
 
-import { SignInForm } from "@/components/sign-in-form";
+import { SignInForm } from "@/components/SignInForm";
 
 // Mock the useAuth hook
 jest.mock("@/hooks/useAuth");

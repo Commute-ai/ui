@@ -1,9 +1,6 @@
-import { useState } from "react";
-
-import { useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
 
-import { SignUpForm } from "@/components/sign-up-form";
+import { SignUpForm } from "@/components/SignUpForm";
 
 export default function RegisterScreen() {
     return (
