@@ -2,6 +2,7 @@ import React, { ReactNode, createContext, useEffect, useState } from "react";
 
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import z from "zod";
 
 import authApi from "@/lib/api/auth";
 
@@ -159,6 +160,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } catch (error) {
             if (error instanceof ApiError) {
                 throw new Error(error.message);
+            }
+            if (error instanceof z.ZodError) {
+                throw new Error(error.errors.map((e) => e.message).join(", "));
             }
             throw new Error("Sign up failed. Please try again.");
         }

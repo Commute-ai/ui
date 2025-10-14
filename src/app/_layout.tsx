@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
@@ -19,8 +21,12 @@ export {
 } from "expo-router";
 
 const RootLayoutNav = () => {
-    const { colorScheme } = useColorScheme();
+    const { colorScheme, setColorScheme } = useColorScheme();
     const { isSignedIn } = useAuth();
+
+    useEffect(() => {
+        setColorScheme("light");
+    }, [setColorScheme]);
 
     return (
         <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
