@@ -12,7 +12,7 @@ const getEnvVars = (): Config => {
     return ConfigSchema.parse({
         appVariant: process.env.APP_VARIANT || "development",
         apiUrl:
-            process.env.API_URL ||
+            process.env.EXPO_PUBLIC_API_URL ||
             (Platform.OS === "web"
                 ? "http://localhost:8000/api/v1"
                 : "http://10.0.2.2:8000/api/v1"),
