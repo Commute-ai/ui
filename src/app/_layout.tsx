@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
@@ -12,7 +14,6 @@ import { useAuth } from "@/hooks/useAuth";
 import "@/global.css";
 
 import { AuthProvider } from "@/context/AuthContext";
-import { useEffect } from "react";
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -24,8 +25,8 @@ const RootLayoutNav = () => {
     const { isSignedIn } = useAuth();
 
     useEffect(() => {
-        setColorScheme('light');
-    }, []);
+        setColorScheme("light");
+    }, [setColorScheme]);
 
     return (
         <ThemeProvider value={NAV_THEME[colorScheme ?? "light"]}>
