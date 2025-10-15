@@ -1,6 +1,9 @@
-import { View, Text } from "react-native";
-import { RouteForm } from "@/components/RouteForm";
 import { useContext } from "react";
+
+import { Text, View } from "react-native";
+
+import { RouteForm } from "@/components/RouteForm";
+
 import { AuthContext } from "@/context/AuthContext";
 
 export default function Home() {
@@ -9,11 +12,13 @@ export default function Home() {
     return (
         <View className="flex-1 items-center justify-center">
             {auth?.user ? (
-                <Text className="text-lg mb-4">Hello, {auth.user.username}!</Text>
+                <Text className="mb-4 text-lg">
+                    Hello, {auth.user.username}!
+                </Text>
             ) : (
-                <Text className="text-lg mb-4">Hello!</Text>
+                <Text className="mb-4 text-lg">Hello!</Text>
             )}
-            <Text className="text-2xl font-bold mb-4">Plan a new route</Text>
+            <Text className="mb-4 text-2xl font-bold">Plan a new route</Text>
             <RouteForm />
         </View>
     );
