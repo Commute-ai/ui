@@ -2,6 +2,8 @@ import React from "react";
 
 import { Button, View } from "react-native";
 
+import { showAlert } from "@/lib/alert";
+
 import { PlaceInput } from "./PlaceInput";
 
 //TODO: Fetch the places from somewhere once we get APIs going
@@ -59,6 +61,13 @@ export function RouteForm() {
     };
 
     const onSubmit = () => {
+        if (!from.trim() || !to.trim()) {
+            showAlert(
+                "Missing information",
+                "Please fill in both 'From' and 'To' fields."
+            );
+            return;
+        }
         console.log(`Searching for a route from ${from} to ${to}`);
     };
 
