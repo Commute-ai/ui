@@ -1,4 +1,4 @@
-import {Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Button, FlatList, Text, TextInput, TouchableOpacity, View} from "react-native";
 import React from "react";
 
 //TODO: Map selection
@@ -14,26 +14,26 @@ export function PlaceInput({
                            }) {
     const renderSuggestion = ({item}) => (
         <TouchableOpacity onPress={() => onSuggestionPress(item)}>
-            <Text style={styles.suggestion}>{item}</Text>
+            <Text className="p-2.5">{item}</Text>
         </TouchableOpacity>
     );
 
     return (
         <View>
-            <View style={styles.inputWrapper}>
+            <View className="justify-center">
                 <TextInput
-                    style={showHereButton ? styles.inputWithButton : styles.input}
+                    className={showHereButton ? "h-10 border border-gray-300 bg-white pl-2.5 pr-20" : "h-10 border border-gray-300 bg-white px-2.5"}
                     onChangeText={onChangeText}
                     value={value}
                     placeholder={placeholder}
                 />
                 {showHereButton && (
-                    <View style={styles.buttonContainer}>
+                    <View className="absolute right-0 top-0 bottom-0 justify-center mr-1.5">
                         <Button title="Here" onPress={onHerePress}/>
                     </View>
                 )}
             </View>
-            <View style={styles.suggestionsContainer}>
+            <View className="h-24 border-x border-b border-gray-300 mb-2.5">
                 {suggestions.length > 0 && (
                     <FlatList
                         data={suggestions}
@@ -45,42 +45,3 @@ export function PlaceInput({
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    inputWrapper: {
-        justifyContent: 'center',
-    },
-    buttonContainer: {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        marginRight: 5
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        paddingHorizontal: 10,
-        backgroundColor: 'white',
-    },
-    inputWithButton: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        paddingLeft: 10,
-        paddingRight: 80, // Space for the button
-        backgroundColor: 'white',
-    },
-    suggestionsContainer: {
-        height: 100,
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderTopWidth: 0,
-        marginBottom: 10,
-    },
-    suggestion: {
-        padding: 10,
-    }
-});

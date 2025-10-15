@@ -1,4 +1,4 @@
-import {Button, StyleSheet, View} from "react-native";
+import {Button, View} from "react-native";
 import React from "react";
 import {PlaceInput} from "./PlaceInput";
 
@@ -52,7 +52,7 @@ export function RouteForm() {
         setFrom("Kamppi");
     };
 
-    return <View style={styles.container}>
+    return <View className="w-4/5 my-2.5">
         <PlaceInput
             placeholder="From"
             value={from}
@@ -72,10 +72,3 @@ export function RouteForm() {
         <Button title="Go!" onPress={onSubmit}/>
     </View>
 }
-
-const styles = StyleSheet.create({
-    container: {
-        width: '80%',
-        marginVertical: 10,
-    }
-});

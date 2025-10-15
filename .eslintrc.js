@@ -1,8 +1,12 @@
 module.exports = {
     root: true,
-    extends: ["eslint:recommended", "plugin:react/recommended"],
-    plugins: ["react", "react-hooks", "react-native"],
-    parser: "@babel/eslint-parser",
+    extends: [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:@typescript-eslint/recommended",
+    ],
+    plugins: ["react", "react-hooks", "react-native", "@typescript-eslint"],
+    parser: "@typescript-eslint/parser",
     parserOptions: {
         ecmaVersion: 2021,
         sourceType: "module",
@@ -13,6 +17,7 @@ module.exports = {
         babelOptions: {
             presets: ["@babel/preset-react"],
         },
+        project: "./tsconfig.json",
     },
     env: {
         "react-native/react-native": true,
@@ -27,8 +32,10 @@ module.exports = {
         "react-hooks/exhaustive-deps": "warn",
         "react-native/no-unused-styles": "warn",
         "react-native/no-inline-styles": "warn",
-        "no-unused-vars": "warn",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "warn", // Use TypeScript version
         "no-console": "off",
+        "@typescript-eslint/no-explicit-any": "off", // Allow 'any' type
     },
     settings: {
         react: {
