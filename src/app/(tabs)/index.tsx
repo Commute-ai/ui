@@ -1,8 +1,10 @@
 import { useContext, useState } from "react";
-import { Text, View } from "react-native";
+
 import { useRouter } from "expo-router";
+import { Text, View } from "react-native";
 
 import { RouteForm } from "@/components/RouteForm";
+
 import { AuthContext } from "@/context/AuthContext";
 import { useRouteSearch } from "@/context/RouteSearchContext";
 
