@@ -20,14 +20,24 @@ const helsinkiPlaces: string[] = [
     "Pasila",
 ];
 
-export function RouteForm() {
-    const [from, setFrom] = React.useState("");
-    const [to, setTo] = React.useState("");
+export function RouteForm({
+    from,
+    to,
+    onFromChange,
+    onToChange,
+    onSearch,
+}: {
+    from: string;
+    to: string;
+    onFromChange: (text: string) => void;
+    onToChange: (text: string) => void;
+    onSearch: () => void;
+}) {
     const [fromSuggestions, setFromSuggestions] = React.useState<string[]>([]);
     const [toSuggestions, setToSuggestions] = React.useState<string[]>([]);
 
-    const onFromChange = (text: string) => {
-        setFrom(text);
+    const handleFromChange = (text: string) => {
+        onFromChange(text);
         if (text.length > 0) {
             const regex = new RegExp(`^${text}`, "i");
             setFromSuggestions(
@@ -38,8 +48,8 @@ export function RouteForm() {
         }
     };
 
-    const onToChange = (text: string) => {
-        setTo(text);
+    const handleToChange = (text: string) => {
+        onToChange(text);
         if (text.length > 0) {
             const regex = new RegExp(`^${text}`, "i");
             setToSuggestions(
@@ -51,12 +61,12 @@ export function RouteForm() {
     };
 
     const onFromSuggestionPress = (place: string) => {
-        setFrom(place);
+        onFromChange(place);
         setFromSuggestions([]);
     };
 
     const onToSuggestionPress = (place: string) => {
-        setTo(place);
+        onToChange(place);
         setToSuggestions([]);
     };
 
@@ -68,11 +78,11 @@ export function RouteForm() {
             );
             return;
         }
-        console.log(`Searching for a route from ${from} to ${to}`);
+        onSearch();
     };
 
     const useCurrentLocation = () => {
-        setFrom("Kamppi");
+        onFromChange("Kamppi");
     };
 
     return (
@@ -80,7 +90,7 @@ export function RouteForm() {
             <PlaceInput
                 placeholder="From"
                 value={from}
-                onChangeText={onFromChange}
+                onChangeText={handleFromChange}
                 suggestions={fromSuggestions}
                 onSuggestionPress={onFromSuggestionPress}
                 showHereButton={true}
@@ -89,7 +99,7 @@ export function RouteForm() {
             <PlaceInput
                 placeholder="To"
                 value={to}
-                onChangeText={onToChange}
+                onChangeText={handleToChange}
                 suggestions={toSuggestions}
                 onSuggestionPress={onToSuggestionPress}
             />
