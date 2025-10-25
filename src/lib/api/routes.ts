@@ -8,6 +8,8 @@ const CoordinatesSchema = z.object({
     longitude: z.number(),
 });
 
+export type Coordinates = z.infer<typeof CoordinatesSchema>;
+
 // Corresponds to the backend's RouteSearchRequest schema
 const RouteSearchRequestSchema = z.object({
     origin: CoordinatesSchema,
@@ -18,17 +20,38 @@ const RouteSearchRequestSchema = z.object({
 
 export type RouteSearchRequest = z.infer<typeof RouteSearchRequestSchema>;
 
+const placeCoordinates: Record<string, Coordinates> = {
+    "kamppi": { latitude: 60.1686, longitude: 24.9326 },
+    "kallio": { latitude: 60.181, longitude: 24.950 },
+    "eira": { latitude: 60.158, longitude: 24.940 },
+    "helsinki": { latitude: 60.1699, longitude: 24.9384 },
+    "espoo": { latitude: 60.205, longitude: 24.656 },
+    "vantaa": { latitude: 60.294, longitude: 25.040 },
+    "kauniainen": { latitude: 60.212, longitude: 24.728 },
+    "helsingin yliopisto": { latitude: 60.169, longitude: 24.950 },
+    "rautatatientori": { latitude: 60.171, longitude: 24.941 },
+    "pasila": { latitude: 60.2055, longitude: 24.9625 },
+    "center": { latitude: 60.1699, longitude: 24.9384 }, // Helsinki Centre
+};
+
+
 export const routesApi = {
     searchRoutes: async (
-        // The string arguments from the UI are currently ignored.
         origin: string,
         destination: string,
         token: string
     ): Promise<Itinerary[]> => {
-        // TODO: Implement geocoding to convert string origin/destination to coordinates.
+        const originCoords = placeCoordinates[origin.toLowerCase()];
+        const destinationCoords = placeCoordinates[destination.toLowerCase()];
+
+        if (!originCoords || !destinationCoords) {
+            // TODO: Better error handling
+            throw new Error(`Unknown origin or destination: ${!originCoords ? origin : destination}`);
+        }
+
         const requestBody: RouteSearchRequest = {
-            origin: { latitude: 60.1699, longitude: 24.9384 }, // Hardcoded: Helsinki Centre
-            destination: { latitude: 60.2055, longitude: 24.9625 }, // Hardcoded: Pasila Station
+            origin: originCoords,
+            destination: destinationCoords,
             num_itineraries: 5,
             earliest_departure: new Date().toISOString(),
         };

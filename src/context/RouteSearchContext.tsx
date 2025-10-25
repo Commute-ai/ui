@@ -53,6 +53,9 @@ export function RouteSearchProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             if (error instanceof ApiError) {
                 setError(error.message);
+            } else if (error instanceof Error && error.message.startsWith("Unknown origin or destination:")) {
+                const unknownPlace = error.message.split(": ")[1];
+                setError(`Unknown place: "${unknownPlace}". Please select a place from the suggestions.`);
             } else {
                 setError("An unexpected error occurred while searching for routes.");
             }

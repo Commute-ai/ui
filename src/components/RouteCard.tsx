@@ -89,9 +89,12 @@ const getModeIcon = (mode: string, line?: string | null) => {
             textColor = "text-green-600";
             break;
         case "SUBWAY":
-        case "RAIL":
             icon = <Train {...iconProps} className="text-orange-600" />;
             textColor = "text-orange-600";
+            break;
+        case "RAIL":
+            icon = <Train {...iconProps} className="text-purple-600" />;
+            textColor = "text-purple-600";
             break;
         case "FERRY":
             icon = <Ship {...iconProps} className="text-cyan-600" />;
