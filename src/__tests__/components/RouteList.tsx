@@ -4,54 +4,39 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { RouteList } from "@/components/RouteList";
 
-import { type Route } from "@/types/routes";
+import { type Itinerary } from "@/types/routes";
 
-const mockRoutes: Route[] = [
+const formatTime = (isoString: string) => {
+    try {
+        return new Date(isoString).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    } catch (e) {
+        return "N/A";
+    }
+};
+
+const mockRoutes: Itinerary[] = [
     {
         id: 1,
-        name: "Route 1",
-        description: "Description 1",
-        length: "10 km",
-        estimated_time: "1 hour",
-        transport_type: "walking",
-        route_points: [],
-        created_at: "2023-01-01T12:00:00Z",
-        updated_at: "2023-01-01T12:00:00Z",
-        user_id: 1,
-        user: {
-            id: 1,
-            username: "user1",
-            email: "user1@example.com",
-            created_at: "2023-01-01T12:00:00Z",
-        },
+        start: "2023-01-01T10:00:00Z",
+        end: "2023-01-01T11:00:00Z",
+        duration: 3600,
+        distance: 10000,
+        walk_distance: 1000,
         legs: [],
-        departureTime: "10:00",
-        arrivalTime: "11:00",
-        duration: 60,
         aiMatch: 95,
         aiReason: "Fastest route",
     },
     {
         id: 2,
-        name: "Route 2",
-        description: "Description 2",
-        length: "20 km",
-        estimated_time: "2 hours",
-        transport_type: "cycling",
-        route_points: [],
-        created_at: "2023-01-01T12:00:00Z",
-        updated_at: "2023-01-01T12:00:00Z",
-        user_id: 1,
-        user: {
-            id: 1,
-            username: "user1",
-            email: "user1@example.com",
-            created_at: "2023-01-01T12:00:00Z",
-        },
+        start: "2023-01-01T12:00:00Z",
+        end: "2023-01-01T14:00:00Z",
+        duration: 7200,
+        distance: 20000,
+        walk_distance: 2000,
         legs: [],
-        departureTime: "12:00",
-        arrivalTime: "14:00",
-        duration: 120,
         aiMatch: 80,
         aiReason: "Scenic route",
     },
@@ -81,15 +66,15 @@ describe("RouteList", () => {
         render(
             <RouteList routes={mockRoutes} isLoading={false} error={null} />
         );
-        expect(screen.getByText("10:00")).toBeTruthy();
-        expect(screen.getByText("12:00")).toBeTruthy();
+        expect(screen.getByText(formatTime(mockRoutes[0].start))).toBeTruthy();
+        expect(screen.getByText(formatTime(mockRoutes[1].start))).toBeTruthy();
     });
 
     it("expands and collapses a route when toggled", () => {
         render(
             <RouteList routes={mockRoutes} isLoading={false} error={null} />
         );
-        const route1 = screen.getByText("10:00");
+        const route1 = screen.getByText(formatTime(mockRoutes[0].start));
 
         // Expand
         fireEvent.press(route1);
@@ -104,8 +89,8 @@ describe("RouteList", () => {
         render(
             <RouteList routes={mockRoutes} isLoading={false} error={null} />
         );
-        const route1Trigger = screen.getByText("10:00");
-        const route2Trigger = screen.getByText("12:00");
+        const route1Trigger = screen.getByText(formatTime(mockRoutes[0].start));
+        const route2Trigger = screen.getByText(formatTime(mockRoutes[1].start));
 
         // Expand the first route
         fireEvent.press(route1Trigger);

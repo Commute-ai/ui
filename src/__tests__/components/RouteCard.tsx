@@ -4,60 +4,71 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { RouteCard } from "@/components/RouteCard";
 
-import { type Route } from "@/types/routes";
+import { type Itinerary, type RouteLeg } from "@/types/routes";
 
-const mockRoute: Route = {
+const formatTime = (isoString: string) => {
+    try {
+        return new Date(isoString).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    } catch (e) {
+        return "N/A";
+    }
+};
+
+const mockRoute: Itinerary = {
     id: 1,
-    departureTime: "10:00",
-    arrivalTime: "10:45",
-    duration: 45,
+    start: "2023-01-01T10:00:00Z",
+    end: "2023-01-01T10:45:00Z",
+    duration: 2700, // 45 minutes in seconds
+    distance: 5000,
+    walk_distance: 800,
     legs: [
         {
-            mode: "walk",
-            distance: "500m",
-            from: "Start",
-            to: "Bus Stop A",
-            duration: 5,
-            line: "",
-        },
+            mode: "WALK",
+            distance: 500,
+            duration: 300, // 5 minutes
+            from_place: { name: "Start" },
+            to_place: { name: "Bus Stop A" },
+        } as RouteLeg,
         {
-            mode: "bus",
-            line: "101",
-            from: "Bus Stop A",
-            to: "Train Station B",
-            duration: 20,
-        },
+            mode: "BUS",
+            distance: 4200,
+            duration: 1200, // 20 minutes
+            route: { short_name: "101" },
+            from_place: { name: "Bus Stop A" },
+            to_place: { name: "Train Station B" },
+        } as RouteLeg,
         {
-            mode: "walk",
-            distance: "300m",
-            from: "Train Station B",
-            to: "Destination",
-            duration: 10,
-            line: "",
-        },
+            mode: "WALK",
+            distance: 300,
+            duration: 600, // 10 minutes
+            from_place: { name: "Train Station B" },
+            to_place: { name: "Destination" },
+        } as RouteLeg,
     ],
     aiMatch: 92,
     aiReason:
-        "This route is highly rated for its punctuality and low number of changes.",
-    // a lot of other properties are not needed for this test
-} as unknown as Route;
+        "This route is a good balance of speed and comfort based on your preferences.",
+};
 
 describe("RouteCard", () => {
     it("renders the compact view correctly", () => {
         render(<RouteCard route={mockRoute} />);
 
         // Check times
-        expect(screen.getByText("10:00")).toBeTruthy();
-        expect(screen.getByText("10:45")).toBeTruthy();
+        expect(screen.getByText(formatTime(mockRoute.start))).toBeTruthy();
+        expect(screen.getByText(formatTime(mockRoute.end))).toBeTruthy();
         expect(screen.getByText("45 min")).toBeTruthy();
 
-        // Check for transit icons (presence of bus icon is a good indicator)
+        // Check for transit icons
         expect(screen.getByText("101")).toBeTruthy();
 
         // Check for AI reason
         expect(
             screen.getByText(
-                "This route is highly rated for its punctuality and low number of changes."
+                "This route is a good balance of speed and comfort based on your preferences."
             )
         ).toBeTruthy();
 
@@ -69,7 +80,7 @@ describe("RouteCard", () => {
         const onToggleMock = jest.fn();
         render(<RouteCard route={mockRoute} onToggle={onToggleMock} />);
 
-        fireEvent.press(screen.getByText("10:00"));
+        fireEvent.press(screen.getByText(formatTime(mockRoute.start)));
         expect(onToggleMock).toHaveBeenCalledTimes(1);
     });
 
@@ -80,10 +91,8 @@ describe("RouteCard", () => {
         expect(screen.getByText("Journey Details")).toBeTruthy();
 
         // Check for leg details
-        expect(screen.getAllByText(/walk 500m/i).length).toBe(2);
-        expect(screen.getAllByText(/101/).length).toBe(4);
-        expect(screen.getAllByText(/Bus Stop A → Train Station B/).length).toBe(
-            2
-        );
+        expect(screen.getByText(/Walk 500 m/)).toBeTruthy();
+        expect(screen.getByText(/Bus 101/)).toBeTruthy();
+        expect(screen.getByText(/Bus Stop A → Train Station B/)).toBeTruthy();
     });
 });
