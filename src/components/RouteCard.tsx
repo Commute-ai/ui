@@ -7,6 +7,7 @@ import {
     ChevronDown,
     Footprints,
     MessageSquare,
+    Ship,
     Sparkles,
     Train,
     TramFront,
@@ -38,6 +39,26 @@ interface AiInsightRule {
     insight: Insight;
 }
 
+// Helper Functions
+const formatTime = (isoString: string) => {
+    try {
+        return new Date(isoString).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    } catch (e) {
+        return "N/A";
+    }
+};
+
+const formatDuration = (seconds: number) => {
+    const minutes = Math.round(seconds / 60);
+    return `${minutes} min`;
+};
+
+const titleCase = (str: string) =>
+    str.toLowerCase().replace(/\b\w/g, (s) => s.toUpperCase());
+
 // Style and Icon Helpers
 const getMatchColor = (match: number) => {
     if (match >= 90) return "text-green-600";
@@ -51,52 +72,51 @@ const getMatchBgColor = (match: number) => {
     return "bg-amber-50 border-amber-200";
 };
 
-const getModeIcon = (mode: string, line?: string) => {
+const getModeIcon = (mode: string, line?: string | null) => {
+    const iconProps = { className: "h-5 w-5" };
+    let icon;
+    let textColor = "text-gray-500";
+
     switch (mode) {
-        case "walk":
-            return <Footprints className="h-5 w-5 text-gray-500" />;
-        case "bus":
-            return (
-                <View className="flex flex-row items-center gap-1">
-                    <Bus className="h-5 w-5 text-blue-600" />
-                    {line && (
-                        <Text className="text-xs font-semibold text-blue-600">
-                            {line}
-                        </Text>
-                    )}
-                </View>
-            );
-        case "tram":
-            return (
-                <View className="flex flex-row items-center gap-1">
-                    <TramFront className="h-5 w-5 text-green-600" />
-                    {line && (
-                        <Text className="text-xs font-semibold text-green-600">
-                            {line}
-                        </Text>
-                    )}
-                </View>
-            );
-        case "metro":
-            return (
-                <View className="flex flex-row items-center gap-1">
-                    <Train className="h-5 w-5 text-orange-600" />
-                    {line && (
-                        <Text className="text-xs font-semibold text-orange-600">
-                            {line}
-                        </Text>
-                    )}
-                </View>
-            );
+        case "WALK":
+            return <Footprints {...iconProps} className={textColor} />;
+        case "BUS":
+            icon = <Bus {...iconProps} className="text-blue-600" />;
+            textColor = "text-blue-600";
+            break;
+        case "TRAM":
+            icon = <TramFront {...iconProps} className="text-green-600" />;
+            textColor = "text-green-600";
+            break;
+        case "SUBWAY":
+        case "RAIL":
+            icon = <Train {...iconProps} className="text-orange-600" />;
+            textColor = "text-orange-600";
+            break;
+        case "FERRY":
+            icon = <Ship {...iconProps} className="text-cyan-600" />;
+            textColor = "text-cyan-600";
+            break;
         default:
             return null;
     }
+
+    return (
+        <View className="flex flex-row items-center gap-1">
+            {icon}
+            {line && (
+                <Text className={cn("text-xs font-semibold", textColor)}>
+                    {line}
+                </Text>
+            )}
+        </View>
+    );
 };
 
-// Data-driven AI Insights
+// Data-driven AI Insights (Mocked)
 const aiInsightRules: AiInsightRule[] = [
     {
-        match: (leg, index) => leg.mode === "walk" && index === 0,
+        match: (leg, index) => leg.mode === "WALK" && index === 0,
         insight: {
             text: "Social media reports indicate poor road conditions on this walking path. Several users mentioned uneven sidewalks near the campus area.",
             sentiment: "warning",
@@ -104,7 +124,8 @@ const aiInsightRules: AiInsightRule[] = [
         },
     },
     {
-        match: (leg, index) => leg.mode === "bus" && leg.line === "506",
+        match: (leg) =>
+            leg.mode === "BUS" && leg.route?.short_name === "506",
         insight: {
             text: "This bus route is usually scenic and not as crowded during this time, which fits your preferences perfectly. Great views along Mannerheimintie!",
             sentiment: "positive",
@@ -112,21 +133,19 @@ const aiInsightRules: AiInsightRule[] = [
         },
     },
     {
-        match: (leg, index) => leg.mode === "walk" && index === 2,
+        match: (leg, index) => leg.mode === "WALK" && index > 0,
         insight: {
-            text: "This walking route passes through the shopping district. Well-maintained sidewalks with good lighting.",
+            text: "This walking route passes through a quiet park. Well-maintained paths with good lighting.",
             sentiment: "neutral",
             socialCount: 12,
         },
     },
 ];
 
-const getAiInsight = (
-    leg: RouteLeg,
-    index: number,
-    routeId: number
-): Insight | null => {
-    if (routeId !== 1) return null; // Only show for first route as demo
+const getAiInsight = (leg: RouteLeg, index: number): Insight | null => {
+    // Mock: For demonstration, only show insights on some routes.
+    const shouldShow = leg.duration > 120; // e.g. only on legs longer than 2 mins
+    if (!shouldShow) return null;
 
     const foundRule = aiInsightRules.find((rule) => rule.match(leg, index));
     return foundRule ? foundRule.insight : null;
@@ -161,6 +180,12 @@ export function RouteCard({
 }: RouteCardProps) {
     const [showAiInsights, setShowAiInsights] = useState(false);
 
+    // Mock AI data that would have come from the route object
+    const mockAiData = {
+        aiMatch: 85,
+        aiReason: "This route is a good balance of speed and comfort based on your preferences.",
+    };
+
     useEffect(() => {
         if (isExpanded) {
             const timer = setTimeout(() => {
@@ -184,13 +209,13 @@ export function RouteCard({
                     {/* Time Column */}
                     <View className="flex min-w-[80px] flex-col items-end">
                         <Text className="text-2xl font-semibold text-gray-800">
-                            {route.departureTime}
+                            {formatTime(route.start)}
                         </Text>
                         <Text className="text-sm text-gray-500">
-                            {route.arrivalTime}
+                            {formatTime(route.end)}
                         </Text>
                         <Text className="mt-1 text-xs text-gray-500">
-                            {route.duration} min
+                            {formatDuration(route.duration)}
                         </Text>
                     </View>
 
@@ -203,7 +228,7 @@ export function RouteCard({
                                     key={index}
                                     className="flex flex-row items-center gap-1"
                                 >
-                                    {getModeIcon(leg.mode, leg.line)}
+                                    {getModeIcon(leg.mode, leg.route?.short_name)}
                                     {index < route.legs.length - 1 && (
                                         <View className="mx-1 h-px w-2 bg-gray-200" />
                                     )}
@@ -211,46 +236,34 @@ export function RouteCard({
                             ))}
                         </View>
 
-                        {/* Route Description */}
-                        <View className="space-y-1 text-sm text-gray-500">
-                            {route.legs.map((leg, index) => (
-                                <View
-                                    key={index}
-                                    className="flex flex-row items-center gap-2"
-                                >
-                                    {leg.mode === "walk" ? (
-                                        <Text>Walk {leg.distance}</Text>
-                                    ) : (
-                                        <Text>
-                                            {leg.mode.charAt(0).toUpperCase() +
-                                                leg.mode.slice(1)}{" "}
-                                            {leg.line} • {leg.from} → {leg.to}
-                                        </Text>
-                                    )}
-                                </View>
-                            ))}
+                        {/* Walk Distance */}
+                        <View className="text-sm text-gray-500">
+                            <Text>
+                                <Footprints className="h-4 w-4 text-gray-500" />{" "}
+                                {Math.round(route.walk_distance)} m walk
+                            </Text>
                         </View>
 
-                        {/* AI Enhancement Badge */}
+                        {/* AI Enhancement Badge (Mocked) */}
                         <View
                             className={cn(
                                 "inline-flex items-start gap-2 rounded-lg border px-3 py-2 text-sm",
-                                getMatchBgColor(route.aiMatch)
+                                getMatchBgColor(mockAiData.aiMatch)
                             )}
                         >
                             <Sparkles
                                 className={cn(
                                     "mt-0.5 h-4 w-4 flex-shrink-0",
-                                    getMatchColor(route.aiMatch)
+                                    getMatchColor(mockAiData.aiMatch)
                                 )}
                             />
                             <Text
                                 className={cn(
                                     "font-medium",
-                                    getMatchColor(route.aiMatch)
+                                    getMatchColor(mockAiData.aiMatch)
                                 )}
                             >
-                                {route.aiReason}
+                                {mockAiData.aiReason}
                             </Text>
                         </View>
                     </View>
@@ -273,30 +286,29 @@ export function RouteCard({
                     {/* Journey Legs with AI Insights */}
                     <View className="space-y-4">
                         {route.legs.map((leg, index) => {
-                            const insight = getAiInsight(leg, index, route.id);
-                            const styles = insight
-                                ? sentimentStyles[insight.sentiment]
-                                : null;
+                            const insight = getAiInsight(leg, index);
+                            const styles =
+                                insight && sentimentStyles[insight.sentiment];
 
                             return (
                                 <View key={index} className="space-y-2">
                                     {/* Leg Header */}
                                     <View className="flex flex-row items-center gap-3 rounded-lg bg-gray-100/50 p-3">
-                                        {getModeIcon(leg.mode, leg.line)}
+                                        {getModeIcon(leg.mode, leg.route?.short_name)}
                                         <View className="flex-1">
                                             <Text className="text-sm font-medium">
-                                                {leg.mode === "walk"
-                                                    ? `Walk ${leg.distance}`
-                                                    : `${
-                                                          leg.mode
-                                                              .charAt(0)
-                                                              .toUpperCase() +
-                                                          leg.mode.slice(1)
-                                                      } ${leg.line || ""}`}
+                                                {leg.mode === "WALK"
+                                                    ? `Walk ${Math.round(
+                                                          leg.distance
+                                                      )} m`
+                                                    : `${titleCase(leg.mode)} ${
+                                                          leg.route?.short_name || ""
+                                                      }`}
                                             </Text>
                                             <Text className="text-xs text-gray-500">
-                                                {leg.from} → {leg.to} •{" "}
-                                                {leg.duration} min
+                                                {leg.from_place.name} →{" "}
+                                                {leg.to_place.name} •{" "}
+                                                {formatDuration(leg.duration)}
                                             </Text>
                                         </View>
                                     </View>
