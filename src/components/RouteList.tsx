@@ -48,7 +48,9 @@ const RouteList = ({
     }
 
     const handleToggle = (index: number) => {
-        setExpandedRouteIndex((prevIndex) => (prevIndex === index ? null : index));
+        setExpandedRouteIndex((prevIndex) =>
+            prevIndex === index ? null : index
+        );
     };
 
     const routes = Array.isArray(routesProp) ? routesProp : [];

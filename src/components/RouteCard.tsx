@@ -127,8 +127,7 @@ const aiInsightRules: AiInsightRule[] = [
         },
     },
     {
-        match: (leg) =>
-            leg.mode === "BUS" && leg.route?.short_name === "506",
+        match: (leg) => leg.mode === "BUS" && leg.route?.short_name === "506",
         insight: {
             text: "This bus route is usually scenic and not as crowded during this time, which fits your preferences perfectly. Great views along Mannerheimintie!",
             sentiment: "positive",
@@ -186,7 +185,8 @@ export function RouteCard({
     // Mock AI data that would have come from the route object
     const mockAiData = {
         aiMatch: 85,
-        aiReason: "This route is a good balance of speed and comfort based on your preferences.",
+        aiReason:
+            "This route is a good balance of speed and comfort based on your preferences.",
     };
 
     useEffect(() => {
@@ -231,7 +231,10 @@ export function RouteCard({
                                     key={index}
                                     className="flex flex-row items-center gap-1"
                                 >
-                                    {getModeIcon(leg.mode, leg.route?.short_name)}
+                                    {getModeIcon(
+                                        leg.mode,
+                                        leg.route?.short_name
+                                    )}
                                     {index < route.legs.length - 1 && (
                                         <View className="mx-1 h-px w-2 bg-gray-200" />
                                     )}
@@ -297,7 +300,10 @@ export function RouteCard({
                                 <View key={index} className="space-y-2">
                                     {/* Leg Header */}
                                     <View className="flex flex-row items-center gap-3 rounded-lg bg-gray-100/50 p-3">
-                                        {getModeIcon(leg.mode, leg.route?.short_name)}
+                                        {getModeIcon(
+                                            leg.mode,
+                                            leg.route?.short_name
+                                        )}
                                         <View className="flex-1">
                                             <Text className="text-sm font-medium">
                                                 {leg.mode === "WALK"
@@ -305,7 +311,8 @@ export function RouteCard({
                                                           leg.distance
                                                       )} m`
                                                     : `${titleCase(leg.mode)} ${
-                                                          leg.route?.short_name || ""
+                                                          leg.route
+                                                              ?.short_name || ""
                                                       }`}
                                             </Text>
                                             <Text className="text-xs text-gray-500">

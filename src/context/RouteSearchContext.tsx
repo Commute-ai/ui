@@ -1,6 +1,8 @@
 import { type ReactNode, createContext, useContext, useState } from "react";
-import { AuthContext } from "./AuthContext";
+
 import { routesApi } from "@/lib/api/routes";
+
+import { AuthContext } from "./AuthContext";
 import { ApiError } from "@/types/api";
 import { type Itinerary } from "@/types/routes";
 
@@ -53,11 +55,18 @@ export function RouteSearchProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             if (error instanceof ApiError) {
                 setError(error.message);
-            } else if (error instanceof Error && error.message.startsWith("Unknown origin or destination:")) {
+            } else if (
+                error instanceof Error &&
+                error.message.startsWith("Unknown origin or destination:")
+            ) {
                 const unknownPlace = error.message.split(": ")[1];
-                setError(`Unknown place: "${unknownPlace}". Please select a place from the suggestions.`);
+                setError(
+                    `Unknown place: "${unknownPlace}". Please select a place from the suggestions.`
+                );
             } else {
-                setError("An unexpected error occurred while searching for routes.");
+                setError(
+                    "An unexpected error occurred while searching for routes."
+                );
             }
         } finally {
             setIsLoading(false);
