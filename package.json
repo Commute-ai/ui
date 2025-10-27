@@ -14,8 +14,8 @@
         "prebuild": "expo prebuild",
         "build:staging:android": "eas build --platform android --profile staging",
         "build:production:android": "eas build --platform android --profile production",
-        "update:staging": "eas update --branch staging",
-        "update:production": "eas update --branch production",
+        "update:staging": "eas update --branch staging --environment preview",
+        "update:production": "eas update --branch production --environment production",
         "publish": "expo publish",
         "eject": "expo eject"
     },
