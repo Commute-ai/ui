@@ -17,7 +17,10 @@ const RouteList = ({
     isLoading: boolean;
     error: string | null;
 }) => {
-    const [expandedRouteId, setExpandedRouteId] = useState<number | null>(null);
+    // Use the item's index to track the expanded route, as there's no stable ID.
+    const [expandedRouteIndex, setExpandedRouteIndex] = useState<number | null>(
+        null
+    );
 
     if (isLoading) {
         return (
@@ -44,8 +47,10 @@ const RouteList = ({
         );
     }
 
-    const handleToggle = (routeId: number) => {
-        setExpandedRouteId((prevId) => (prevId === routeId ? null : routeId));
+    const handleToggle = (index: number) => {
+        setExpandedRouteIndex((prevIndex) =>
+            prevIndex === index ? null : index
+        );
     };
 
     const routes = Array.isArray(routesProp) ? routesProp : [];
@@ -64,14 +69,14 @@ const RouteList = ({
     return (
         <FlatList
             data={validRoutes}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
                 <RouteCard
                     route={item}
-                    isExpanded={expandedRouteId === item.id}
-                    onToggle={() => handleToggle(item.id)}
+                    isExpanded={expandedRouteIndex === index}
+                    onToggle={() => handleToggle(index)}
                 />
             )}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => index.toString()}
             ItemSeparatorComponent={() => <View className="h-px bg-gray-300" />}
             className="p-4"
         />
