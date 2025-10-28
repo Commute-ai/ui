@@ -21,8 +21,8 @@ const RouteSchema = z.object({
 
 export const LegSchema = z.object({
     mode: TransportModeSchema,
-    start: z.date(),
-    end: z.date(),
+    start: z.coerce.date(),
+    end: z.coerce.date(),
     duration: z.number(),
     distance: z.number(),
     from_place: PlaceSchema,
@@ -31,8 +31,8 @@ export const LegSchema = z.object({
 });
 
 export const ItinerarySchema = z.object({
-    start: z.date(),
-    end: z.date(),
+    start: z.coerce.date(),
+    end: z.coerce.date(),
     duration: z.number(),
     walk_distance: z.number(),
     walk_time: z.number(),

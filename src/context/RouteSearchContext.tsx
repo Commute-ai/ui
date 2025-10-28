@@ -1,10 +1,10 @@
 import { type ReactNode, createContext, useContext, useState } from "react";
 
-import { routesApi } from "@/lib/api/routes";
+import { routingApi } from "@/lib/api/routing";
 
 import { AuthContext } from "./AuthContext";
 import { ApiError } from "@/types/api";
-import { type Itinerary } from "@/types/routes";
+import { type Itinerary } from "@/types/itinary";
 
 interface RouteSearchContextType {
     routes: Itinerary[];
@@ -50,7 +50,7 @@ export function RouteSearchProvider({ children }: { children: ReactNode }) {
                 setError("Authentication token is not available.");
                 return;
             }
-            const itineraries = await routesApi.searchRoutes(from, to, token);
+            const itineraries = await routingApi.searchRoutes(from, to);
             setRoutes(itineraries);
         } catch (error) {
             if (error instanceof ApiError) {

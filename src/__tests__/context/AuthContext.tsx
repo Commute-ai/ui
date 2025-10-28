@@ -14,11 +14,20 @@ import type { User } from "@/types/user";
 // Mock the auth API
 jest.mock("@/lib/api/auth");
 
-// Mock expo-secure-store
+const mockStorage: Record<string, string> = {};
+
 jest.mock("expo-secure-store", () => ({
-    getItemAsync: jest.fn(),
-    setItemAsync: jest.fn(),
-    deleteItemAsync: jest.fn(),
+    getItemAsync: jest.fn((key: string) =>
+        Promise.resolve(mockStorage[key] || null)
+    ),
+    setItemAsync: jest.fn((key: string, value: string) => {
+        mockStorage[key] = value;
+        return Promise.resolve();
+    }),
+    deleteItemAsync: jest.fn((key: string) => {
+        delete mockStorage[key];
+        return Promise.resolve();
+    }),
 }));
 
 describe("AuthContext", () => {
@@ -31,14 +40,13 @@ describe("AuthContext", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
-        (SecureStore.setItemAsync as jest.Mock).mockResolvedValue(undefined);
-        (SecureStore.deleteItemAsync as jest.Mock).mockResolvedValue(undefined);
+        for (const key in mockStorage) {
+            delete mockStorage[key];
+        }
     });
 
     describe("useAuth hook", () => {
         it("throws error when used outside AuthProvider", () => {
-            // Suppress console.error for this test
             const consoleError = jest
                 .spyOn(console, "error")
                 .mockImplementation(() => {});
@@ -179,6 +187,7 @@ describe("AuthContext", () => {
             (authApi.login as jest.Mock).mockRejectedValue(
                 new ApiError(errorMessage, "UNAUTHORIZED")
             );
+            (authApi.getCurrentUser as jest.Mock).mockResolvedValue(null);
 
             const wrapper = ({ children }: { children: React.ReactNode }) => (
                 <AuthProvider>{children}</AuthProvider>

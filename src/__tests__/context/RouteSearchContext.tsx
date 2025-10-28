@@ -1,8 +1,8 @@
 import React, { type ReactNode } from "react";
 
-import { act, renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook } from "@testing-library/react-native";
 
-import { routesApi } from "@/lib/api/routes";
+import { routingApi } from "@/lib/api/routing";
 
 import { AuthContext } from "@/context/AuthContext";
 import {
@@ -10,32 +10,28 @@ import {
     useRouteSearch,
 } from "@/context/RouteSearchContext";
 import { ApiError } from "@/types/api";
-import { type Itinerary } from "@/types/routes";
+import { type Itinerary } from "@/types/itinary";
 
 // Mock the routesApi
-jest.mock("@/lib/api/routes");
-const mockedRoutesApi = routesApi as jest.Mocked<typeof routesApi>;
+jest.mock("@/lib/api/routing");
+const mockedRoutingApi = routingApi as jest.Mocked<typeof routingApi>;
 
 const mockItineraries: Itinerary[] = [
     {
-        id: 1,
         legs: [],
         duration: 60,
-        distance: 10,
-        start: "2023-01-01T10:00:00Z",
-        end: "2023-01-01T11:00:00Z",
-        aiMatch: 95,
-        aiReason: "Fastest",
+        walk_distance: 10,
+        walk_time: 10,
+        start: new Date("2023-01-01T10:00:00Z"),
+        end: new Date("2023-01-01T11:00:00Z"),
     },
     {
-        id: 2,
         legs: [],
         duration: 75,
-        distance: 12,
-        start: "2023-01-01T12:00:00Z",
-        end: "2023-01-01T14:00:00Z",
-        aiMatch: 85,
-        aiReason: "Cheapest",
+        walk_distance: 12,
+        walk_time: 15,
+        start: new Date("2023-01-01T12:00:00Z"),
+        end: new Date("2023-01-01T14:00:00Z"),
     },
 ];
 
@@ -83,7 +79,7 @@ describe("useRouteSearch", () => {
     });
 
     it("searches for routes successfully and updates state", async () => {
-        mockedRoutesApi.searchRoutes.mockResolvedValue(mockItineraries);
+        mockedRoutingApi.searchRoutes.mockResolvedValue(mockItineraries);
 
         const { result } = renderHook(() => useRouteSearch(), {
             wrapper: createWrapper(defaultAuthContext),
@@ -96,10 +92,9 @@ describe("useRouteSearch", () => {
         expect(result.current.isLoading).toBe(false);
         expect(result.current.routes).toEqual(mockItineraries);
         expect(result.current.error).toBeNull();
-        expect(mockedRoutesApi.searchRoutes).toHaveBeenCalledWith(
+        expect(mockedRoutingApi.searchRoutes).toHaveBeenCalledWith(
             "Helsinki",
-            "Tampere",
-            "fake-token"
+            "Tampere"
         );
     });
 
@@ -108,7 +103,7 @@ describe("useRouteSearch", () => {
             "The server is down",
             "SERVICE_UNAVAILABLE"
         );
-        mockedRoutesApi.searchRoutes.mockRejectedValue(apiError);
+        mockedRoutingApi.searchRoutes.mockRejectedValue(apiError);
 
         const { result } = renderHook(() => useRouteSearch(), {
             wrapper: createWrapper(defaultAuthContext),
@@ -127,7 +122,7 @@ describe("useRouteSearch", () => {
         const unknownPlaceError = new Error(
             "Unknown origin or destination: Atlantis"
         );
-        mockedRoutesApi.searchRoutes.mockRejectedValue(unknownPlaceError);
+        mockedRoutingApi.searchRoutes.mockRejectedValue(unknownPlaceError);
 
         const { result } = renderHook(() => useRouteSearch(), {
             wrapper: createWrapper(defaultAuthContext),
@@ -145,7 +140,7 @@ describe("useRouteSearch", () => {
 
     it("handles generic errors", async () => {
         const genericError = new Error("Something went wrong");
-        mockedRoutesApi.searchRoutes.mockRejectedValue(genericError);
+        mockedRoutingApi.searchRoutes.mockRejectedValue(genericError);
 
         const { result } = renderHook(() => useRouteSearch(), {
             wrapper: createWrapper(defaultAuthContext),
@@ -178,11 +173,11 @@ describe("useRouteSearch", () => {
         expect(result.current.error).toBe(
             "Authentication token is not available."
         );
-        expect(mockedRoutesApi.searchRoutes).not.toHaveBeenCalled();
+        expect(mockedRoutingApi.searchRoutes).not.toHaveBeenCalled();
     });
 
     it("clears the search results and error", async () => {
-        mockedRoutesApi.searchRoutes.mockResolvedValue(mockItineraries);
+        mockedRoutingApi.searchRoutes.mockResolvedValue(mockItineraries);
 
         const { result } = renderHook(() => useRouteSearch(), {
             wrapper: createWrapper(defaultAuthContext),

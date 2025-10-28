@@ -19,7 +19,8 @@ describe("routingApi", () => {
                 end: new Date("2024-01-01T10:30:00Z"),
                 legs: [],
                 duration: 100,
-                walkDistance: 50,
+                walk_distance: 50,
+                walk_time: 20,
             },
         ];
 
@@ -33,11 +34,7 @@ describe("routingApi", () => {
         expect(mockedApiClient.post).toHaveBeenCalledWith(
             "/routes/search",
             expect.any(Object),
-            {
-                headers: {
-                    Authorization: "Bearer test-token",
-                },
-            },
+            {},
             expect.any(Object)
         );
     });
