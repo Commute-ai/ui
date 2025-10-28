@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { RouteList } from "@/components/RouteList";
 
-import { type Itinerary } from "@/types/routes";
+import { type Itinerary } from "@/types/itinary";
 
 const formatTime = (isoString: string) => {
     try {
