@@ -89,12 +89,20 @@ describe("ItineraryCard", () => {
         render(<ItineraryCard itinerary={mockItineraryWithInsight} />);
 
         // Check times
-        expect(screen.getByText(formatTime(mockItineraryWithInsight.start))).toBeTruthy();
-        expect(screen.getByText(formatTime(mockItineraryWithInsight.end))).toBeTruthy();
+        expect(
+            screen.getByText(formatTime(mockItineraryWithInsight.start))
+        ).toBeTruthy();
+        expect(
+            screen.getByText(formatTime(mockItineraryWithInsight.end))
+        ).toBeTruthy();
         expect(screen.getByText("45 min")).toBeTruthy();
 
         // Check for AI insight
-        expect(screen.getByText("This route is usually less crowded during peak hours.")).toBeTruthy();
+        expect(
+            screen.getByText(
+                "This route is usually less crowded during peak hours."
+            )
+        ).toBeTruthy();
     });
 
     it("calls onToggle when pressed", () => {
