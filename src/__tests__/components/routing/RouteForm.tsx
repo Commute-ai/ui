@@ -1,10 +1,10 @@
-import { RouteForm } from "../../components/RouteForm";
-
 import React, { useState } from "react";
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { showAlert } from "@/lib/alert";
+
+import { RouteForm } from "@/components/routing/RouteForm";
 
 jest.mock("@/lib/alert");
 

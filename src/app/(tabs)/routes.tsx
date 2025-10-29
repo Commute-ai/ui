@@ -1,15 +1,19 @@
 import { View } from "react-native";
 
-import { RouteList } from "@/components/RouteList";
+import { ItineraryList } from "@/components/routing/ItineraryList";
 
 import { useRouteSearch } from "@/context/RouteSearchContext";
 
 export default function RoutesTab() {
-    const { routes, isLoading, error } = useRouteSearch();
+    const { itineraries, isLoading, error } = useRouteSearch();
 
     return (
         <View className="flex-1">
-            <RouteList routes={routes} isLoading={isLoading} error={error} />
+            <ItineraryList
+                itineraries={itineraries}
+                isLoading={isLoading}
+                error={error}
+            />
         </View>
     );
 }

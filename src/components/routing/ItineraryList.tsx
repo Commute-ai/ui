@@ -4,20 +4,19 @@ import React, { useState } from "react";
 
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
-import { RouteCard } from "@/components/RouteCard";
+import { ItineraryCard } from "@/components/routing/ItineraryCard";
 
-import { type Route } from "@/types/routes";
+import { type Itinerary } from "@/types/itinerary";
 
-const RouteList = ({
-    routes: routesProp = [],
+export const ItineraryList = ({
+    itineraries = [],
     isLoading = false,
     error = null,
 }: {
-    routes: Route[];
+    itineraries: Itinerary[];
     isLoading: boolean;
     error: string | null;
 }) => {
-    // Use the item's index to track the expanded route, as there's no stable ID.
     const [expandedRouteIndex, setExpandedRouteIndex] = useState<number | null>(
         null
     );
@@ -31,7 +30,7 @@ const RouteList = ({
                     testID="activity-indicator"
                 />
                 <Text className="mt-2.5 text-base text-gray-500">
-                    Finding routes...
+                    Finding itineraries...
                 </Text>
             </View>
         );
@@ -53,14 +52,11 @@ const RouteList = ({
         );
     };
 
-    const routes = Array.isArray(routesProp) ? routesProp : [];
-    const validRoutes = routes.filter((r) => r && typeof r === "object");
-
-    if (validRoutes.length === 0 && !isLoading) {
+    if (itineraries.length === 0 && !isLoading) {
         return (
             <View className="flex-1 items-center justify-center p-5">
                 <Text className="text-base text-gray-500">
-                    No routes found.
+                    No itineraries found.
                 </Text>
             </View>
         );
@@ -68,19 +64,17 @@ const RouteList = ({
 
     return (
         <FlatList
-            data={validRoutes}
+            data={itineraries}
             renderItem={({ item, index }) => (
-                <RouteCard
-                    route={item}
+                <ItineraryCard
+                    itinerary={item}
                     isExpanded={expandedRouteIndex === index}
                     onToggle={() => handleToggle(index)}
                 />
             )}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(_, index) => index.toString()}
             ItemSeparatorComponent={() => <View className="h-px bg-gray-300" />}
             className="p-4"
         />
     );
 };
-
-export { RouteList };

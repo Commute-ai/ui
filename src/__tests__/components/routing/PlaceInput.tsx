@@ -1,8 +1,8 @@
-import { PlaceInput } from "../../components/PlaceInput";
-
 import React from "react";
 
 import { fireEvent, render } from "@testing-library/react-native";
+
+import { PlaceInput } from "@/components/routing/PlaceInput";
 
 describe("PlaceInput", () => {
     const mockOnChangeText = jest.fn();
@@ -15,6 +15,7 @@ describe("PlaceInput", () => {
                 placeholder="From"
                 value=""
                 onChangeText={mockOnChangeText}
+                onSuggestionPress={mockOnSuggestionPress}
                 suggestions={[]}
             />
         );
@@ -27,6 +28,7 @@ describe("PlaceInput", () => {
                 placeholder="From"
                 value=""
                 onChangeText={mockOnChangeText}
+                onSuggestionPress={mockOnSuggestionPress}
                 suggestions={[]}
             />
         );
@@ -70,6 +72,7 @@ describe("PlaceInput", () => {
                 placeholder="From"
                 value=""
                 onChangeText={mockOnChangeText}
+                onSuggestionPress={mockOnSuggestionPress}
                 suggestions={[]}
                 showHereButton={true}
                 onHerePress={mockOnHerePress}

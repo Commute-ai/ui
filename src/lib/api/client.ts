@@ -20,6 +20,7 @@ export interface ApiClientConfig {
 class ApiClient {
     private baseUrl: string;
     private defaultHeaders: Record<string, string>;
+    private tokenProvider?: () => Promise<string | null>;
 
     constructor(baseUrl: string, defaultHeaders?: Record<string, string>) {
         this.baseUrl = baseUrl;
@@ -27,6 +28,10 @@ class ApiClient {
             "Content-Type": "application/json",
             Accept: "application/json",
         };
+    }
+
+    setTokenProvider(provider: () => Promise<string | null>) {
+        this.tokenProvider = provider;
     }
 
     /**
@@ -38,6 +43,16 @@ class ApiClient {
         schema?: z.ZodSchema<T>
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
+
+        if (this.tokenProvider && !options.headers?.["Authorization"]) {
+            const token = await this.tokenProvider();
+            if (token) {
+                options.headers = {
+                    ...options.headers,
+                    Authorization: `Bearer ${token}`,
+                };
+            }
+        }
 
         const config: RequestInit = {
             ...options,

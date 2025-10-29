@@ -106,14 +106,10 @@ export default function ProfilePage() {
                         <Input
                             placeholder="Add a new preference..."
                             value={newPreference}
-                            onChange={(e) => setNewPreference(e.target.value)}
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleAddPreference()
-                            }
                             className="flex-1"
                         />
                         <Button
-                            onClick={handleAddPreference}
+                            onPress={handleAddPreference}
                             size="icon"
                             className="flex-shrink-0 bg-purple-600 hover:bg-purple-700"
                         >

@@ -3,7 +3,7 @@ import { useContext, useState } from "react";
 import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
 
-import { RouteForm } from "@/components/RouteForm";
+import { RouteForm } from "@/components/routing/RouteForm";
 
 import { AuthContext } from "@/context/AuthContext";
 import { useRouteSearch } from "@/context/RouteSearchContext";
@@ -11,7 +11,7 @@ import { useRouteSearch } from "@/context/RouteSearchContext";
 export default function Home() {
     const auth = useContext(AuthContext);
     const router = useRouter();
-    const { routes, error, searchRoutes, clearSearch } = useRouteSearch();
+    const { itineraries, error, searchRoutes, clearSearch } = useRouteSearch();
 
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
@@ -28,14 +28,14 @@ export default function Home() {
 
     const handleFromChange = (text: string) => {
         setFrom(text);
-        if (routes.length > 0 || error) {
+        if (itineraries.length > 0 || error) {
             clearSearch();
         }
     };
 
     const handleToChange = (text: string) => {
         setTo(text);
-        if (routes.length > 0 || error) {
+        if (itineraries.length > 0 || error) {
             clearSearch();
         }
     };
