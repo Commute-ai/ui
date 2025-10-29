@@ -43,7 +43,6 @@ const RouteSearchResponseSchema = z.object({
     destination: CoordinatesSchema,
     itineraries: z.array(ItinerarySchema),
     search_time: z.string(),
-    ai_description: z.string().optional().nullable(),
 });
 
 export const routingApi = {
