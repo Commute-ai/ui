@@ -28,6 +28,7 @@ export const LegSchema = z.object({
     from_place: PlaceSchema,
     to_place: PlaceSchema,
     route: RouteSchema.nullable().optional(),
+    ai_insight: z.string().nullable().optional(),
 });
 
 export const ItinerarySchema = z.object({
@@ -37,6 +38,7 @@ export const ItinerarySchema = z.object({
     walk_distance: z.number(),
     walk_time: z.number(),
     legs: z.array(LegSchema),
+    ai_insight: z.string().nullable().optional(),
 });
 
 export type Place = z.infer<typeof PlaceSchema>;
