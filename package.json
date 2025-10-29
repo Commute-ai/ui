@@ -9,7 +9,7 @@
         "ios": "expo start -c --ios",
         "web": "expo start -c --web",
         "test": "jest",
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx && npx prettier --check .",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx && tsc --noemit && npx prettier --check .",
         "format": "npx prettier --write .",
         "prebuild": "expo prebuild",
         "build:staging:android": "eas build --platform android --profile staging",
