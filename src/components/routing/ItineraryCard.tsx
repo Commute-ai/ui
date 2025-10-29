@@ -64,6 +64,18 @@ const getModeIcon = (mode: string, line?: string | null) => {
     );
 };
 
+const ItineraryAIInsight = ({ insight }: { insight?: string | null }) => {
+    if (!insight) return null;
+    return (
+        <View className="flex flex-row">
+            <View className="flex shrink flex-row items-center justify-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-600">
+                <Sparkles className={"mt-0.5 h-4 w-4"} />
+                <Text className={"font-medium text-blue-600"}>{insight}</Text>
+            </View>
+        </View>
+    );
+};
+
 export function ItineraryCard({
     itinerary,
     isExpanded = false,
@@ -123,20 +135,8 @@ export function ItineraryCard({
                             </Text>
                         </View>
 
-                        <View
-                            className={cn(
-                                "inline-flex items-start gap-2 rounded-lg border px-3 py-2 text-sm"
-                            )}
-                        >
-                            <Sparkles
-                                className={cn("mt-0.5 h-4 w-4 flex-shrink-0")}
-                            />
-                            <Text className={cn("font-medium")}>
-                                The AI description here
-                            </Text>
-                        </View>
+                        <ItineraryAIInsight insight={itinerary.ai_insight} />
                     </View>
-
                     <ChevronDown
                         className={cn(
                             "h-5 w-5 text-gray-500 transition-transform",
