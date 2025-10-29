@@ -128,7 +128,7 @@ describe("Auth API", () => {
     describe("getCurrentUser", () => {
         it("calls apiClient.get with correct endpoint and token", async () => {
             const mockUser: User = {
-                id: "1",
+                id: 1,
                 username: "testuser",
             };
 

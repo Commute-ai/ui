@@ -1,7 +1,7 @@
 import apiClient from "@/lib/api/client";
 import { routingApi } from "@/lib/api/routing";
 
-import { Itinerary } from "@/types/itinary";
+import { Itinerary } from "@/types/itinerary";
 
 jest.mock("@/lib/api/client");
 

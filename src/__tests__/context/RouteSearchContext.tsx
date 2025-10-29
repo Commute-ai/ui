@@ -10,9 +10,9 @@ import {
     useRouteSearch,
 } from "@/context/RouteSearchContext";
 import { ApiError } from "@/types/api";
-import { type Itinerary } from "@/types/itinary";
+import { type Itinerary } from "@/types/itinerary";
 
-// Mock the routesApi
+// Mock the routingApi
 jest.mock("@/lib/api/routing");
 const mockedRoutingApi = routingApi as jest.Mocked<typeof routingApi>;
 
@@ -73,12 +73,12 @@ describe("useRouteSearch", () => {
             wrapper: createWrapper(defaultAuthContext),
         });
 
-        expect(result.current.routes).toEqual([]);
+        expect(result.current.itineraries).toEqual([]);
         expect(result.current.isLoading).toBe(false);
         expect(result.current.error).toBeNull();
     });
 
-    it("searches for routes successfully and updates state", async () => {
+    it("searches for itineraries successfully and updates state", async () => {
         mockedRoutingApi.searchRoutes.mockResolvedValue(mockItineraries);
 
         const { result } = renderHook(() => useRouteSearch(), {
@@ -90,7 +90,7 @@ describe("useRouteSearch", () => {
         });
 
         expect(result.current.isLoading).toBe(false);
-        expect(result.current.routes).toEqual(mockItineraries);
+        expect(result.current.itineraries).toEqual(mockItineraries);
         expect(result.current.error).toBeNull();
         expect(mockedRoutingApi.searchRoutes).toHaveBeenCalledWith(
             "Helsinki",
@@ -114,7 +114,7 @@ describe("useRouteSearch", () => {
         });
 
         expect(result.current.isLoading).toBe(false);
-        expect(result.current.routes).toEqual([]);
+        expect(result.current.itineraries).toEqual([]);
         expect(result.current.error).toBe("The server is down");
     });
 
@@ -152,7 +152,7 @@ describe("useRouteSearch", () => {
 
         expect(result.current.isLoading).toBe(false);
         expect(result.current.error).toBe(
-            "An unexpected error occurred while searching for routes."
+            "An unexpected error occurred while searching for itineraries."
         );
     });
 
@@ -189,7 +189,7 @@ describe("useRouteSearch", () => {
         });
 
         // Verify state is populated
-        expect(result.current.routes.length).toBeGreaterThan(0);
+        expect(result.current.itineraries.length).toBeGreaterThan(0);
 
         // Clear the search
         act(() => {
@@ -197,7 +197,7 @@ describe("useRouteSearch", () => {
         });
 
         // Verify state is cleared
-        expect(result.current.routes).toEqual([]);
+        expect(result.current.itineraries).toEqual([]);
         expect(result.current.error).toBeNull();
     });
 });

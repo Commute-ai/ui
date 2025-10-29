@@ -8,7 +8,7 @@ import { ItineraryCard } from "@/components/routing/ItineraryCard";
 
 import { type Itinerary } from "@/types/itinerary";
 
-const ItineraryList = ({
+export const ItineraryList = ({
     itineraries = [],
     isLoading = false,
     error = null,
@@ -78,5 +78,3 @@ const ItineraryList = ({
         />
     );
 };
-
-export default ItineraryList;

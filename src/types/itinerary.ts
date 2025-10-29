@@ -16,7 +16,7 @@ const TransportModeSchema = z.enum([
 const RouteSchema = z.object({
     short_name: z.string(),
     long_name: z.string(),
-    description: z.string().nullable(),
+    description: z.string().nullable().optional(),
 });
 
 export const LegSchema = z.object({

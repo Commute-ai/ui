@@ -4,7 +4,7 @@ import { Button, View } from "react-native";
 
 import { showAlert } from "@/lib/alert";
 
-import { PlaceInput } from "./routing/PlaceInputt";
+import { PlaceInput } from "./PlaceInput";
 
 //TODO: Fetch the places from somewhere once we get APIs going
 const helsinkiPlaces: string[] = [
