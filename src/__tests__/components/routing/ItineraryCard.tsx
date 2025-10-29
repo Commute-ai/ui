@@ -2,6 +2,8 @@ import React from "react";
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import { formatTime } from "@/lib/utils";
+
 import { ItineraryCard } from "@/components/routing/ItineraryCard";
 
 import { type Itinerary } from "@/types/itinerary";
@@ -67,10 +69,8 @@ describe("ItineraryCard", () => {
         render(<ItineraryCard itinerary={mockItinerary} />);
 
         // Check times
-        expect(
-            screen.getByText(mockItinerary.start.toISOString())
-        ).toBeTruthy();
-        expect(screen.getByText(mockItinerary.end.toISOString())).toBeTruthy();
+        expect(screen.getByText(formatTime(mockItinerary.start))).toBeTruthy();
+        expect(screen.getByText(formatTime(mockItinerary.end))).toBeTruthy();
         expect(screen.getByText("45 min")).toBeTruthy();
 
         // Check for transit icons
@@ -86,7 +86,7 @@ describe("ItineraryCard", () => {
             <ItineraryCard itinerary={mockItinerary} onToggle={onToggleMock} />
         );
 
-        fireEvent.press(screen.getByText(mockItinerary.start.toISOString()));
+        fireEvent.press(screen.getByText(formatTime(mockItinerary.start)));
         expect(onToggleMock).toHaveBeenCalledTimes(1);
     });
 

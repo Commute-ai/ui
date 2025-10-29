@@ -13,14 +13,9 @@ import {
 } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
-import { cn } from "@/lib/utils";
+import { cn, formatDuration, formatTime } from "@/lib/utils";
 
 import { Itinerary } from "@/types/itinerary";
-
-const formatDuration = (seconds: number) => {
-    const minutes = Math.round(seconds / 60);
-    return `${minutes} min`;
-};
 
 const titleCase = (str: string) =>
     str.toLowerCase().replace(/\b\w/g, (s) => s.toUpperCase());
@@ -90,10 +85,10 @@ export function ItineraryCard({
                     {/* Time Column */}
                     <View className="flex min-w-[80px] flex-col items-end">
                         <Text className="text-2xl font-semibold text-gray-800">
-                            {itinerary.start.toISOString()}
+                            {formatTime(itinerary.start)}
                         </Text>
                         <Text className="text-sm text-gray-500">
-                            {itinerary.end.toISOString()}
+                            {formatTime(itinerary.end)}
                         </Text>
                         <Text className="mt-1 text-xs text-gray-500">
                             {formatDuration(itinerary.duration)}

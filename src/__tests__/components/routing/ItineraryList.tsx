@@ -2,6 +2,8 @@ import React from "react";
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import { formatTime } from "@/lib/utils";
+
 import { ItineraryList } from "@/components/routing/ItineraryList";
 
 import { type Itinerary } from "@/types/itinerary";
@@ -62,10 +64,10 @@ describe("ItineraryList", () => {
             />
         );
         expect(
-            screen.getByText(mockItineraries[0].start.toISOString())
+            screen.getByText(formatTime(mockItineraries[0].start))
         ).toBeTruthy();
         expect(
-            screen.getByText(mockItineraries[1].start.toISOString())
+            screen.getByText(formatTime(mockItineraries[1].start))
         ).toBeTruthy();
     });
 
@@ -78,7 +80,7 @@ describe("ItineraryList", () => {
             />
         );
         const itinerary1 = screen.getByText(
-            mockItineraries[0].start.toISOString()
+            formatTime(mockItineraries[0].start)
         );
 
         // Expand
@@ -99,10 +101,10 @@ describe("ItineraryList", () => {
             />
         );
         const itinerary1Trigger = screen.getByText(
-            mockItineraries[0].start.toISOString()
+            formatTime(mockItineraries[0].start)
         );
         const itinerary2Trigger = screen.getByText(
-            mockItineraries[1].start.toISOString()
+            formatTime(mockItineraries[1].start)
         );
 
         // Expand the first itinerary
