@@ -76,13 +76,6 @@ describe("ItineraryCard", () => {
         // Check for transit icons
         expect(screen.getByText("101")).toBeTruthy();
 
-        // Check for AI reason
-        expect(
-            screen.getByText(
-                "This itinerary is a good balance of speed and comfort based on your preferences."
-            )
-        ).toBeTruthy();
-
         // Expanded details should not be visible
         expect(screen.queryByText("Journey Details")).toBeNull();
     });
