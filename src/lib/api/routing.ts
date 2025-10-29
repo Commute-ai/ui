@@ -2,7 +2,7 @@ import z from "zod";
 
 import apiClient from "./client";
 import { CoordinatesSchema } from "@/types/geo";
-import { Itinerary, ItinerarySchema } from "@/types/itinary";
+import { Itinerary, ItinerarySchema } from "@/types/itinerary";
 import { Place } from "@/types/location";
 
 const places: Place[] = [

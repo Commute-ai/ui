@@ -4,7 +4,7 @@ import { routingApi } from "@/lib/api/routing";
 
 import { AuthContext } from "./AuthContext";
 import { ApiError } from "@/types/api";
-import { type Itinerary } from "@/types/itinary";
+import { type Itinerary } from "@/types/itinerary";
 
 interface RouteSearchContextType {
     routes: Itinerary[];
