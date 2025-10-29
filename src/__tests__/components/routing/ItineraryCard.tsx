@@ -64,6 +64,11 @@ const mockItinerary: Itinerary = {
     ],
 };
 
+const mockItineraryWithInsight: Itinerary = {
+    ...mockItinerary,
+    ai_insight: "This route is usually less crowded during peak hours.",
+};
+
 describe("ItineraryCard", () => {
     it("renders the compact view correctly", () => {
         render(<ItineraryCard itinerary={mockItinerary} />);
@@ -78,6 +83,18 @@ describe("ItineraryCard", () => {
 
         // Expanded details should not be visible
         expect(screen.queryByText("Journey Details")).toBeNull();
+    });
+
+    it("renders AI insight if it exists", () => {
+        render(<ItineraryCard itinerary={mockItineraryWithInsight} />);
+
+        // Check times
+        expect(screen.getByText(formatTime(mockItineraryWithInsight.start))).toBeTruthy();
+        expect(screen.getByText(formatTime(mockItineraryWithInsight.end))).toBeTruthy();
+        expect(screen.getByText("45 min")).toBeTruthy();
+
+        // Check for AI insight
+        expect(screen.getByText("This route is usually less crowded during peak hours.")).toBeTruthy();
     });
 
     it("calls onToggle when pressed", () => {
