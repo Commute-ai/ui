@@ -15,7 +15,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { cn, formatDuration, formatTime } from "@/lib/utils";
 
-import { Itinerary } from "@/types/itinerary";
+import { Itinerary, Leg } from "@/types/itinerary";
 
 const titleCase = (str: string) =>
     str.toLowerCase().replace(/\b\w/g, (s) => s.toUpperCase());
@@ -72,6 +72,31 @@ const ItineraryAIInsight = ({ insight }: { insight?: string | null }) => {
                 <Sparkles className={"mt-0.5 h-4 w-4"} />
                 <Text className={"font-medium text-blue-600"}>{insight}</Text>
             </View>
+        </View>
+    );
+};
+
+const ItineraryLeg = ({ leg }: { leg: Leg }) => {
+    return (
+        <View className="space-y-2">
+            {/* Leg Header */}
+            <View className="flex flex-row items-center gap-3 rounded-lg bg-gray-100/50 p-3">
+                {getModeIcon(leg.mode, leg.route?.short_name)}
+                <View className="flex-1">
+                    <Text className="text-sm font-medium">
+                        {leg.mode === "WALK"
+                            ? `Walk ${Math.round(leg.distance)} m`
+                            : `${titleCase(leg.mode)} ${
+                                  leg.route?.short_name || ""
+                              }`}
+                    </Text>
+                    <Text className="text-xs text-gray-500">
+                        {leg.from_place.name} → {leg.to_place.name} •{" "}
+                        {formatDuration(leg.duration)}
+                    </Text>
+                </View>
+            </View>
+            <ItineraryAIInsight insight={leg.ai_insight} />
         </View>
     );
 };
@@ -137,12 +162,14 @@ export function ItineraryCard({
 
                         <ItineraryAIInsight insight={itinerary.ai_insight} />
                     </View>
-                    <ChevronDown
+                    <View
                         className={cn(
-                            "h-5 w-5 text-gray-500 transition-transform",
+                            "transition-transform",
                             isExpanded && "rotate-180"
                         )}
-                    />
+                    >
+                        <ChevronDown className="h-5 w-5 text-gray-500" />
+                    </View>
                 </View>
             </TouchableOpacity>
 
@@ -153,36 +180,9 @@ export function ItineraryCard({
                     </Text>
 
                     <View className="space-y-4">
-                        {itinerary.legs.map((leg, index) => {
-                            return (
-                                <View key={index} className="space-y-2">
-                                    {/* Leg Header */}
-                                    <View className="flex flex-row items-center gap-3 rounded-lg bg-gray-100/50 p-3">
-                                        {getModeIcon(
-                                            leg.mode,
-                                            leg.route?.short_name
-                                        )}
-                                        <View className="flex-1">
-                                            <Text className="text-sm font-medium">
-                                                {leg.mode === "WALK"
-                                                    ? `Walk ${Math.round(
-                                                          leg.distance
-                                                      )} m`
-                                                    : `${titleCase(leg.mode)} ${
-                                                          leg.route
-                                                              ?.short_name || ""
-                                                      }`}
-                                            </Text>
-                                            <Text className="text-xs text-gray-500">
-                                                {leg.from_place.name} →{" "}
-                                                {leg.to_place.name} •{" "}
-                                                {formatDuration(leg.duration)}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                </View>
-                            );
-                        })}
+                        {itinerary.legs.map((leg, index) => (
+                            <ItineraryLeg key={index} leg={leg} />
+                        ))}
                     </View>
                 </View>
             )}

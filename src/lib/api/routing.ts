@@ -45,6 +45,9 @@ const RouteSearchResponseSchema = z.object({
     search_time: z.string(),
 });
 
+// A simple feature toggle for mocking AI insights
+const MOCK_AI_INSIGHTS = false;
+
 export const routingApi = {
     searchRoutes: async (
         origin_name: string,
@@ -78,6 +81,16 @@ export const routingApi = {
             {},
             RouteSearchResponseSchema
         );
+
+        if (MOCK_AI_INSIGHTS) {
+            console.log("Mocking AI insights for development.");
+            response.itineraries.forEach((itinerary) => {
+                itinerary.ai_insight = `This is a mocked AI insight for the itinerary to ${destination.name}.`;
+                itinerary.legs.forEach((leg) => {
+                    leg.ai_insight = `Mocked AI insight for a ${leg.mode} leg.`;
+                });
+            });
+        }
 
         return response.itineraries;
     },
