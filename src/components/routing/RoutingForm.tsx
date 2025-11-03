@@ -1,8 +1,12 @@
 import React from "react";
 
-import { Button, View } from "react-native";
+import { MapPin, Navigation, Search } from "lucide-react-native";
+import { View } from "react-native";
 
 import { showAlert } from "@/lib/alert";
+
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 
 import { PlaceInput } from "./PlaceInput";
 
@@ -18,6 +22,7 @@ const helsinkiPlaces: string[] = [
     "Helsingin Yliopisto",
     "Rautatatientori",
     "Pasila",
+    "Exactum",
 ];
 
 export function RoutingForm({
@@ -70,6 +75,10 @@ export function RoutingForm({
         setToSuggestions([]);
     };
 
+    const useCurrentLocation = () => {
+        onFromChange("Kamppi");
+    };
+
     const onSubmit = () => {
         if (!from.trim() || !to.trim()) {
             showAlert(
@@ -78,32 +87,74 @@ export function RoutingForm({
             );
             return;
         }
+
+        // Validate that the inputs are from the hardcoded list
+        if (!helsinkiPlaces.includes(from)) {
+            showAlert(
+                "Invalid location",
+                "Please select a valid location from the suggestions for 'From' field."
+            );
+            return;
+        }
+
+        if (!helsinkiPlaces.includes(to)) {
+            showAlert(
+                "Invalid location",
+                "Please select a valid location from the suggestions for 'To' field."
+            );
+            return;
+        }
+
         onSearch();
     };
 
-    const useCurrentLocation = () => {
-        onFromChange("Kamppi");
-    };
-
     return (
-        <View className="my-2.5 w-4/5">
-            <PlaceInput
-                placeholder="From"
-                value={from}
-                onChangeText={handleFromChange}
-                suggestions={fromSuggestions}
-                onSuggestionPress={onFromSuggestionPress}
-                showHereButton={true}
-                onHerePress={useCurrentLocation}
-            />
-            <PlaceInput
-                placeholder="To"
-                value={to}
-                onChangeText={handleToChange}
-                suggestions={toSuggestions}
-                onSuggestionPress={onToSuggestionPress}
-            />
-            <Button title="Go!" onPress={onSubmit} />
+        <View className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+            {/* Origin Input */}
+            <View className="space-y-2">
+                <View className="flex flex-row items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <Text className="text-sm font-medium text-foreground">
+                        From
+                    </Text>
+                </View>
+                <PlaceInput
+                    placeholder="Enter origin (e.g., Exactum)"
+                    value={from}
+                    onChangeText={handleFromChange}
+                    suggestions={fromSuggestions}
+                    onSuggestionPress={onFromSuggestionPress}
+                    showHereButton={true}
+                    onHerePress={useCurrentLocation}
+                />
+            </View>
+
+            {/* Destination Input */}
+            <View className="space-y-2">
+                <View className="flex flex-row items-center gap-2">
+                    <Navigation className="h-4 w-4 text-accent" />
+                    <Text className="text-sm font-medium text-foreground">
+                        To
+                    </Text>
+                </View>
+                <PlaceInput
+                    placeholder="Enter destination (e.g., Kamppi)"
+                    value={to}
+                    onChangeText={handleToChange}
+                    suggestions={toSuggestions}
+                    onSuggestionPress={onToSuggestionPress}
+                />
+            </View>
+
+            {/* Search Button */}
+            <Button
+                onPress={onSubmit}
+                disabled={!from || !to}
+                className="h-12 w-full bg-primary"
+            >
+                <Search className="mr-2 h-5 w-5" />
+                <Text className="text-primary-foreground">Search routes</Text>
+            </Button>
         </View>
     );
 }
