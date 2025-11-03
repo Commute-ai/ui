@@ -23,7 +23,7 @@ export default function Home() {
         }
 
         searchRoutes(from, to);
-        router.push("/routes");
+        router.push("/itineraries");
     };
 
     const handleFromChange = (text: string) => {
