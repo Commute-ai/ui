@@ -3,7 +3,7 @@ import { useContext, useState } from "react";
 import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
 
-import { RouteForm } from "@/components/RouteForm";
+import { RoutingForm } from "@/components/routing/RoutingForm";
 
 import { AuthContext } from "@/context/AuthContext";
 import { useRouteSearch } from "@/context/RouteSearchContext";
@@ -11,14 +11,14 @@ import { useRouteSearch } from "@/context/RouteSearchContext";
 export default function Home() {
     const auth = useContext(AuthContext);
     const router = useRouter();
-    const { routes, error, searchRoutes, clearSearch } = useRouteSearch();
+    const { itineraries, error, searchRoutes, clearSearch } = useRouteSearch();
 
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
 
     const handleSearch = () => {
         if (!from.trim() || !to.trim()) {
-            // RouteForm shows an alert, so we just exit here.
+            // RoutingForm shows an alert, so we just exit here.
             return;
         }
 
@@ -28,14 +28,14 @@ export default function Home() {
 
     const handleFromChange = (text: string) => {
         setFrom(text);
-        if (routes.length > 0 || error) {
+        if (itineraries.length > 0 || error) {
             clearSearch();
         }
     };
 
     const handleToChange = (text: string) => {
         setTo(text);
-        if (routes.length > 0 || error) {
+        if (itineraries.length > 0 || error) {
             clearSearch();
         }
     };
@@ -53,7 +53,7 @@ export default function Home() {
                 <Text className="mb-4 text-2xl font-bold">
                     Plan a new route
                 </Text>
-                <RouteForm
+                <RoutingForm
                     from={from}
                     to={to}
                     onFromChange={handleFromChange}

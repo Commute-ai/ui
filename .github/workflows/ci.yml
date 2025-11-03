@@ -71,9 +71,11 @@ jobs:
                   if [[ $GITHUB_REF == refs/heads/main ]] || [[ $GITHUB_REF == refs/heads/master ]]; then
                     echo "channel=production" >> $GITHUB_OUTPUT
                     echo "branch_name=main" >> $GITHUB_OUTPUT
+                    echo "environment=production" >> $GITHUB_OUTPUT
                   else
                     echo "channel=staging" >> $GITHUB_OUTPUT
                     echo "branch_name=develop" >> $GITHUB_OUTPUT
+                    echo "environment=preview" >> $GITHUB_OUTPUT
                   fi
 
             - name: 🚀 Push OTA Update
@@ -81,7 +83,8 @@ jobs:
                   echo "📱 Pushing update to ${{ steps.channel.outputs.channel }} channel"
                   eas update \
                     --branch ${{ steps.channel.outputs.channel }} \
-                    --message "${{ github.event.head_commit.message }}"
+                    --message "${{ github.event.head_commit.message }}" \
+                    --environment "${{ steps.channel.outputs.environment }}"
                   echo "✅ Update published! All installed apps will receive it automatically."
 
             - name: 📝 Add job summary

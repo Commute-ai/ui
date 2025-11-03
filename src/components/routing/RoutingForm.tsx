@@ -20,7 +20,7 @@ const helsinkiPlaces: string[] = [
     "Pasila",
 ];
 
-export function RouteForm({
+export function RoutingForm({
     from,
     to,
     onFromChange,

@@ -1,20 +1,20 @@
-import { RouteForm } from "../../components/RouteForm";
-
 import React, { useState } from "react";
 
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { showAlert } from "@/lib/alert";
 
+import { RoutingForm } from "@/components/routing/RoutingForm";
+
 jest.mock("@/lib/alert");
 
-// Helper component to manage the state of the controlled RouteForm
-const StatefulRouteForm = ({ onSearch = jest.fn() }) => {
+// Helper component to manage the state of the controlled RoutingForm
+const StatefulRoutingForm = ({ onSearch = jest.fn() }) => {
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
 
     return (
-        <RouteForm
+        <RoutingForm
             from={from}
             to={to}
             onFromChange={setFrom}
@@ -24,20 +24,20 @@ const StatefulRouteForm = ({ onSearch = jest.fn() }) => {
     );
 };
 
-describe("RouteForm", () => {
+describe("RoutingForm", () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     it("renders two PlaceInput components and a submit button", () => {
-        render(<StatefulRouteForm />);
+        render(<StatefulRoutingForm />);
         expect(screen.getByPlaceholderText("From")).toBeTruthy();
         expect(screen.getByPlaceholderText("To")).toBeTruthy();
         expect(screen.getByText("Go!")).toBeTruthy();
     });
 
     it('updates the "From" input, shows suggestions, and selects one', () => {
-        render(<StatefulRouteForm />);
+        render(<StatefulRoutingForm />);
         const fromInput = screen.getByPlaceholderText("From");
 
         // Type to show suggestions
@@ -53,7 +53,7 @@ describe("RouteForm", () => {
     });
 
     it('updates the "To" input, shows suggestions, and selects one', () => {
-        render(<StatefulRouteForm />);
+        render(<StatefulRoutingForm />);
         const toInput = screen.getByPlaceholderText("To");
 
         fireEvent.changeText(toInput, "Kall");
@@ -64,7 +64,7 @@ describe("RouteForm", () => {
     });
 
     it('uses the current location when "Here" is pressed', () => {
-        render(<StatefulRouteForm />);
+        render(<StatefulRoutingForm />);
         const fromInput = screen.getByPlaceholderText("From");
         fireEvent.press(screen.getByText("Here"));
         expect(fromInput.props.value).toBe("Kamppi");
@@ -72,7 +72,7 @@ describe("RouteForm", () => {
 
     it("submits the form with the correct values", () => {
         const searchFn = jest.fn();
-        render(<StatefulRouteForm onSearch={searchFn} />);
+        render(<StatefulRoutingForm onSearch={searchFn} />);
 
         const fromInput = screen.getByPlaceholderText("From");
         const toInput = screen.getByPlaceholderText("To");
@@ -86,7 +86,7 @@ describe("RouteForm", () => {
     });
 
     it("shows an alert if both fields are empty on submit", () => {
-        render(<StatefulRouteForm />);
+        render(<StatefulRoutingForm />);
         fireEvent.press(screen.getByText("Go!"));
         expect(showAlert).toHaveBeenCalledWith(
             "Missing information",
@@ -96,7 +96,7 @@ describe("RouteForm", () => {
 
     it("shows an alert if the 'From' field is empty on submit", () => {
         const searchFn = jest.fn();
-        render(<StatefulRouteForm onSearch={searchFn} />);
+        render(<StatefulRoutingForm onSearch={searchFn} />);
         const toInput = screen.getByPlaceholderText("To");
 
         fireEvent.changeText(toInput, "Kallio");
@@ -111,7 +111,7 @@ describe("RouteForm", () => {
 
     it("shows an alert if the 'To' field is empty on submit", () => {
         const searchFn = jest.fn();
-        render(<StatefulRouteForm onSearch={searchFn} />);
+        render(<StatefulRoutingForm onSearch={searchFn} />);
         const fromInput = screen.getByPlaceholderText("From");
 
         fireEvent.changeText(fromInput, "Helsinki");
