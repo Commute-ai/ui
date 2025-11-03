@@ -4,6 +4,11 @@ import { fireEvent, render } from "@testing-library/react-native";
 
 import { PlaceInput } from "@/components/routing/PlaceInput";
 
+// Mock the Portal component to render suggestions inline for testing
+jest.mock("@rn-primitives/portal", () => ({
+    Portal: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 describe("PlaceInput", () => {
     const mockOnChangeText = jest.fn();
     const mockOnSuggestionPress = jest.fn();

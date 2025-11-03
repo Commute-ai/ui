@@ -4,26 +4,12 @@ import { MapPin, Navigation, Search } from "lucide-react-native";
 import { View } from "react-native";
 
 import { showAlert } from "@/lib/alert";
+import { useLocationService } from "@/lib/location";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
 import { PlaceInput } from "./PlaceInput";
-
-//TODO: Fetch the places from somewhere once we get APIs going
-const helsinkiPlaces: string[] = [
-    "Kamppi",
-    "Kallio",
-    "Eira",
-    "Helsinki",
-    "Espoo",
-    "Vantaa",
-    "Kauniainen",
-    "Helsingin Yliopisto",
-    "Rautatatientori",
-    "Pasila",
-    "Exactum",
-];
 
 export function RoutingForm({
     from,
@@ -38,27 +24,39 @@ export function RoutingForm({
     onToChange: (text: string) => void;
     onSearch: () => void;
 }) {
+    const { getSuggestions, isValidPlace, getCurrentLocation } =
+        useLocationService();
     const [fromSuggestions, setFromSuggestions] = React.useState<string[]>([]);
     const [toSuggestions, setToSuggestions] = React.useState<string[]>([]);
 
-    const handleFromChange = (text: string) => {
+    const handleFromChange = async (text: string) => {
         onFromChange(text);
         if (text.length > 0) {
-            const regex = new RegExp(`^${text}`, "i");
+            const suggestions = await getSuggestions(text);
             setFromSuggestions(
-                helsinkiPlaces.filter((place) => regex.test(place))
+                suggestions
+                    .map((place) => place.name)
+                    .filter(
+                        (name): name is string =>
+                            name !== null && name !== undefined
+                    )
             );
         } else {
             setFromSuggestions([]);
         }
     };
 
-    const handleToChange = (text: string) => {
+    const handleToChange = async (text: string) => {
         onToChange(text);
         if (text.length > 0) {
-            const regex = new RegExp(`^${text}`, "i");
+            const suggestions = await getSuggestions(text);
             setToSuggestions(
-                helsinkiPlaces.filter((place) => regex.test(place))
+                suggestions
+                    .map((place) => place.name)
+                    .filter(
+                        (name): name is string =>
+                            name !== null && name !== undefined
+                    )
             );
         } else {
             setToSuggestions([]);
@@ -75,8 +73,11 @@ export function RoutingForm({
         setToSuggestions([]);
     };
 
-    const useCurrentLocation = () => {
-        onFromChange("Kamppi");
+    const useCurrentLocation = async () => {
+        const currentLocation = await getCurrentLocation();
+        if (currentLocation && currentLocation.name) {
+            onFromChange(currentLocation.name);
+        }
     };
 
     const onSubmit = () => {
@@ -88,8 +89,8 @@ export function RoutingForm({
             return;
         }
 
-        // Validate that the inputs are from the hardcoded list
-        if (!helsinkiPlaces.includes(from)) {
+        // Validate that the inputs are valid places
+        if (!isValidPlace(from)) {
             showAlert(
                 "Invalid location",
                 "Please select a valid location from the suggestions for 'From' field."
@@ -97,7 +98,7 @@ export function RoutingForm({
             return;
         }
 
-        if (!helsinkiPlaces.includes(to)) {
+        if (!isValidPlace(to)) {
             showAlert(
                 "Invalid location",
                 "Please select a valid location from the suggestions for 'To' field."
