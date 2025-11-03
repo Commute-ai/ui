@@ -120,3 +120,15 @@ The app uses Expo Router for file-system based routing:
 - User preferences component
 - Profile management
 - Settings screen with preferences
+
+### Location Service
+
+- Centralized location management in `src/lib/location.ts`
+- Provides interface for place suggestions, validation, and current location
+- Uses hardcoded Helsinki places for development
+- Designed for easy integration with real geo services
+- All components use the location service instead of hardcoded places
+
+### Types
+
+- Always use types in the types directory unless the type is only used in that file and shouldnt be exported.
