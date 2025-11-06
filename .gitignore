@@ -43,3 +43,6 @@ expo-env.d.ts
 
 # For the nixers
 .direnv/
+
+ios/
+android/
