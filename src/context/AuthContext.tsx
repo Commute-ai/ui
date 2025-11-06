@@ -72,11 +72,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        apiClient.setTokenProvider(getToken);
-    }, []);
-
-    useEffect(() => {
         const initialize = async () => {
+            apiClient.setTokenProvider(getToken);
             await syncUser();
             setIsLoaded(true);
         };

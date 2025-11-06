@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Plus, X } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
@@ -6,25 +6,54 @@ import { TouchableOpacity, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+import { useAuth } from "@/hooks/useAuth";
+import preferencesApi, { type Preference } from "@/lib/api/preferences";
 
 const UserPreferences = () => {
-    const [preferences, setPreferences] = useState([
-        "Prefer scenic routes",
-        "Avoid full buses",
-        "Minimize walking",
-        "Prefer window seats",
-    ]);
+    const { isLoaded } = useAuth();
+    const [preferences, setPreferences] = useState<Preference[]>([]);
     const [newPreference, setNewPreference] = useState("");
 
-    const handleAddPreference = () => {
+    useEffect(() => {
+        const fetchPreferences = async () => {
+            // Wait for the AuthContext to be fully loaded before fetching data
+            if (isLoaded) {
+                try {
+                    const fetchedPreferences =
+                        await preferencesApi.getPreferences();
+                    setPreferences(fetchedPreferences);
+                } catch (error) {
+                    console.error("Failed to fetch preferences:", error);
+                }
+            }
+        };
+
+        fetchPreferences();
+    }, [isLoaded]);
+
+    const handleAddPreference = async () => {
         if (newPreference.trim()) {
-            setPreferences([...preferences, newPreference.trim()]);
-            setNewPreference("");
+            try {
+                const addedPreference = await preferencesApi.addPreference(
+                    newPreference.trim()
+                );
+                setPreferences([...preferences, addedPreference]);
+                setNewPreference("");
+            } catch (error) {
+                console.error("Failed to add preference:", error);
+            }
         }
     };
 
-    const handleRemovePreference = (index: number) => {
-        setPreferences(preferences.filter((_, i) => i !== index));
+    const handleRemovePreference = async (preferenceId: number) => {
+        try {
+            await preferencesApi.deletePreference(preferenceId);
+            setPreferences(
+                preferences.filter((p) => p.id !== preferenceId)
+            );
+        } catch (error) {
+            console.error("Failed to delete preference:", error);
+        }
     };
 
     return (
@@ -38,18 +67,18 @@ const UserPreferences = () => {
             </Text>
 
             <View className="mb-4 flex flex-row flex-wrap items-start gap-2">
-                {preferences.map((pref, index) => (
+                {preferences.map((pref) => (
                     <View
-                        key={index}
+                        key={pref.id}
                         className="shrink flex-row items-center gap-2 rounded-lg border border-purple-200 bg-purple-100 px-3 py-1.5"
                     >
                         <View className="shrink">
                             <Text className="text-sm text-purple-900">
-                                {pref}
+                                {pref.prompt}
                             </Text>
                         </View>
                         <TouchableOpacity
-                            onPress={() => handleRemovePreference(index)}
+                            onPress={() => handleRemovePreference(pref.id)}
                             className="rounded-full p-0.5 transition-colors hover:bg-purple-200"
                         >
                             <X className="h-3 w-3 text-purple-900" />
