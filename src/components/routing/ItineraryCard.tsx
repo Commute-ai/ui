@@ -67,10 +67,12 @@ const getModeIcon = (mode: string, line?: string | null) => {
 const ItineraryAIInsight = ({ insight }: { insight?: string | null }) => {
     if (!insight) return null;
     return (
-        <View className="flex flex-row">
-            <View className="flex shrink flex-row items-center justify-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-600">
-                <Sparkles className={"mt-0.5 h-4 w-4"} />
-                <Text className={"font-medium text-blue-600"}>{insight}</Text>
+        <View className="w-full">
+            <View className="flex flex-row items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
+                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
+                <Text className="flex-1 text-sm font-medium text-blue-600" numberOfLines={0}>
+                    {insight}
+                </Text>
             </View>
         </View>
     );
