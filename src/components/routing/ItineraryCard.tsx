@@ -70,7 +70,10 @@ const ItineraryAIInsight = ({ insight }: { insight?: string | null }) => {
         <View className="w-full">
             <View className="flex flex-row items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
                 <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
-                <Text className="flex-1 text-sm font-medium text-blue-600" numberOfLines={0}>
+                <Text
+                    className="flex-1 text-sm font-medium text-blue-600"
+                    numberOfLines={0}
+                >
                     {insight}
                 </Text>
             </View>
@@ -132,10 +135,9 @@ export function ItineraryCard({
                                 {formatDuration(itinerary.duration)}
                             </Text>
                             <View
-                                className={cn(
-                                    "transition-transform",
-                                    isExpanded && "rotate-180"
-                                )}
+                                style={{
+                                    transform: [{ rotate: isExpanded ? "180deg" : "0deg" }],
+                                }}
                             >
                                 <ChevronDown className="h-5 w-5 text-gray-500" />
                             </View>
