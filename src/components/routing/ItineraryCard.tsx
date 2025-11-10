@@ -136,7 +136,13 @@ export function ItineraryCard({
                             </Text>
                             <View
                                 style={{
-                                    transform: [{ rotate: isExpanded ? "180deg" : "0deg" }],
+                                    transform: [
+                                        {
+                                            rotate: isExpanded
+                                                ? "180deg"
+                                                : "0deg",
+                                        },
+                                    ],
                                 }}
                             >
                                 <ChevronDown className="h-5 w-5 text-gray-500" />

@@ -151,7 +151,7 @@ export function RoutingForm({
             <Button
                 onPress={onSubmit}
                 disabled={!from || !to}
-                className="h-12 w-full bg-primary mt-2"
+                className="mt-2 h-12 w-full bg-primary"
             >
                 <Search className="mr-2 h-5 w-5" />
                 <Text className="text-primary-foreground">Search routes</Text>

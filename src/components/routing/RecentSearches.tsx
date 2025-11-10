@@ -15,7 +15,7 @@ export function RecentSearches({ onQuickSearch }: RecentSearchesProps) {
             <Text className="text-sm font-medium text-muted-foreground">
                 Recent searches
             </Text>
-            <View className="py-2 flex gap-2">
+            <View className="flex gap-2 py-2">
                 <TouchableOpacity
                     onPress={() => onQuickSearch("Exactum", "Kamppi")}
                     className="flex w-full flex-row items-center justify-between rounded-lg border border-border bg-card p-4 active:bg-muted"
