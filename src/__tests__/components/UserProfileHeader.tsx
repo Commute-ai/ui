@@ -97,7 +97,9 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { queryByTestId, queryByText } = renderWithProvider(<UserProfileHeader />);
+        const { queryByTestId, queryByText } = renderWithProvider(
+            <UserProfileHeader />
+        );
         const activityIndicator = queryByTestId("activity-indicator");
         const loggedInText = queryByText("Logged in");
 
@@ -165,7 +167,9 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { getByTestId, rerender } = renderWithProvider(<UserProfileHeader />);
+        const { getByTestId, rerender } = renderWithProvider(
+            <UserProfileHeader />
+        );
         expect(getByTestId("activity-indicator")).toBeTruthy();
 
         // Simulate auth loading complete with user

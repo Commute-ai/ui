@@ -125,7 +125,7 @@ describe("RoutingForm", () => {
             fireEvent.changeText(fromInput, "Helsinki");
             fireEvent.changeText(toInput, "Kallio");
         });
-        
+
         fireEvent.press(screen.getByText("Search routes"));
 
         expect(searchFn).toHaveBeenCalled();
