@@ -1,6 +1,7 @@
 import React from "react";
 
 import { render } from "@testing-library/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -14,6 +15,21 @@ jest.mock("@/hooks/useAuth");
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 const mockUser: User = { id: 1, username: "testuser" };
+
+// Wrapper with SafeAreaProvider
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <SafeAreaProvider
+        initialMetrics={{
+            insets: { top: 0, left: 0, right: 0, bottom: 0 },
+            frame: { x: 0, y: 0, width: 0, height: 0 },
+        }}
+    >
+        {children}
+    </SafeAreaProvider>
+);
+
+const renderWithProvider = (component: React.ReactElement) =>
+    render(component, { wrapper: TestWrapper });
 
 describe("UserProfileHeader", () => {
     afterEach(() => {
@@ -31,7 +47,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { getByTestId } = render(<UserProfileHeader />);
+        const { getByTestId } = renderWithProvider(<UserProfileHeader />);
         const activityIndicator = getByTestId("activity-indicator");
         expect(activityIndicator).toBeTruthy();
     });
@@ -47,7 +63,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { queryByText } = render(<UserProfileHeader />);
+        const { queryByText } = renderWithProvider(<UserProfileHeader />);
         const username = queryByText("testuser");
         expect(username).toBeNull();
     });
@@ -63,7 +79,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { getByText } = render(<UserProfileHeader />);
+        const { getByText } = renderWithProvider(<UserProfileHeader />);
         const username = getByText("testuser");
         const status = getByText("Logged in");
         expect(username).toBeTruthy();
@@ -81,7 +97,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { queryByTestId, queryByText } = render(<UserProfileHeader />);
+        const { queryByTestId, queryByText } = renderWithProvider(<UserProfileHeader />);
         const activityIndicator = queryByTestId("activity-indicator");
         const loggedInText = queryByText("Logged in");
 
@@ -100,7 +116,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { getByTestId } = render(<UserProfileHeader />);
+        const { getByTestId } = renderWithProvider(<UserProfileHeader />);
         const avatar = getByTestId("avatar");
         expect(avatar).toBeTruthy();
     });
@@ -116,7 +132,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { getByText } = render(<UserProfileHeader />);
+        const { getByText } = renderWithProvider(<UserProfileHeader />);
         const status = getByText("Logged in");
         expect(status).toBeTruthy();
     });
@@ -132,7 +148,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { UNSAFE_root } = render(<UserProfileHeader />);
+        const { UNSAFE_root } = renderWithProvider(<UserProfileHeader />);
 
         // Verify the component renders without crashing
         expect(UNSAFE_root).toBeTruthy();
@@ -149,7 +165,7 @@ describe("UserProfileHeader", () => {
             getToken: jest.fn(),
         });
 
-        const { getByTestId, rerender } = render(<UserProfileHeader />);
+        const { getByTestId, rerender } = renderWithProvider(<UserProfileHeader />);
         expect(getByTestId("activity-indicator")).toBeTruthy();
 
         // Simulate auth loading complete with user

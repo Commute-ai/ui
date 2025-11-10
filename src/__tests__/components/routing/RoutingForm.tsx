@@ -65,7 +65,7 @@ describe("RoutingForm", () => {
             fireEvent.changeText(fromInput, "Hels");
         });
 
-        await waitFor(() => {
+        await waitFor(async () => {
             expect(screen.getByText("Helsinki")).toBeTruthy();
             expect(screen.getByText("Helsingin Yliopisto")).toBeTruthy();
         });
@@ -87,7 +87,7 @@ describe("RoutingForm", () => {
             fireEvent.changeText(toInput, "Kall");
         });
 
-        await waitFor(() => {
+        await waitFor(async () => {
             expect(screen.getByText("Kallio")).toBeTruthy();
         });
 
@@ -105,12 +105,12 @@ describe("RoutingForm", () => {
             fireEvent.press(screen.getByText("Here"));
         });
 
-        await waitFor(() => {
+        await waitFor(async () => {
             expect(fromInput.props.value).toBe("Kamppi");
         });
     });
 
-    it("submits the form with the correct values", () => {
+    it("submits the form with the correct values", async () => {
         const searchFn = jest.fn();
         render(<StatefulRoutingForm onSearch={searchFn} />);
 
@@ -121,8 +121,11 @@ describe("RoutingForm", () => {
             "Enter destination (e.g., Kamppi)"
         );
 
-        fireEvent.changeText(fromInput, "Helsinki");
-        fireEvent.changeText(toInput, "Kallio");
+        await act(async () => {
+            fireEvent.changeText(fromInput, "Helsinki");
+            fireEvent.changeText(toInput, "Kallio");
+        });
+        
         fireEvent.press(screen.getByText("Search routes"));
 
         expect(searchFn).toHaveBeenCalled();
@@ -141,21 +144,23 @@ describe("RoutingForm", () => {
         expect(showAlert).not.toHaveBeenCalled();
     });
 
-    it("button does not trigger validation when only one field is filled", () => {
+    it("button does not trigger validation when only one field is filled", async () => {
         const searchFn = jest.fn();
         render(<StatefulRoutingForm onSearch={searchFn} />);
         const toInput = screen.getByPlaceholderText(
             "Enter destination (e.g., Kamppi)"
         );
 
-        fireEvent.changeText(toInput, "Kallio");
+        await act(async () => {
+            fireEvent.changeText(toInput, "Kallio");
+        });
         fireEvent.press(screen.getByText("Search routes"));
 
         // Should not call search function due to disabled state
         expect(searchFn).not.toHaveBeenCalled();
     });
 
-    it("shows an alert if the 'From' field contains an invalid location", () => {
+    it("shows an alert if the 'From' field contains an invalid location", async () => {
         const searchFn = jest.fn();
         render(<StatefulRoutingForm onSearch={searchFn} />);
 
@@ -166,8 +171,10 @@ describe("RoutingForm", () => {
             "Enter destination (e.g., Kamppi)"
         );
 
-        fireEvent.changeText(fromInput, "Invalid Location");
-        fireEvent.changeText(toInput, "Helsinki");
+        await act(async () => {
+            fireEvent.changeText(fromInput, "Invalid Location");
+            fireEvent.changeText(toInput, "Helsinki");
+        });
         fireEvent.press(screen.getByText("Search routes"));
 
         expect(showAlert).toHaveBeenCalledWith(
@@ -177,7 +184,7 @@ describe("RoutingForm", () => {
         expect(searchFn).not.toHaveBeenCalled();
     });
 
-    it("shows an alert if the 'To' field contains an invalid location", () => {
+    it("shows an alert if the 'To' field contains an invalid location", async () => {
         const searchFn = jest.fn();
         render(<StatefulRoutingForm onSearch={searchFn} />);
 
@@ -188,8 +195,10 @@ describe("RoutingForm", () => {
             "Enter destination (e.g., Kamppi)"
         );
 
-        fireEvent.changeText(fromInput, "Helsinki");
-        fireEvent.changeText(toInput, "Invalid Location");
+        await act(async () => {
+            fireEvent.changeText(fromInput, "Helsinki");
+            fireEvent.changeText(toInput, "Invalid Location");
+        });
         fireEvent.press(screen.getByText("Search routes"));
 
         expect(showAlert).toHaveBeenCalledWith(
