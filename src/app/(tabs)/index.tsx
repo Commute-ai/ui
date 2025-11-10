@@ -51,10 +51,14 @@ export default function Home() {
 
     return (
         <View className="flex-1 bg-background">
-            <ScrollView className="flex-1 px-4 py-6">
-                <View className="mx-auto max-w-2xl space-y-6">
+            <ScrollView
+                keyboardShouldPersistTaps="handled"
+                contentContainerClassName="sm:flex-1 items-center justify-start p-4 py-8 sm:py-4 sm:p-6"
+                keyboardDismissMode="interactive"
+            >
+                <View className="w-full max-w-2xl py-6">
                     {/* Welcome Section */}
-                    <View className="space-y-2">
+                    <View className="py-2">
                         <Text className="text-2xl font-bold text-foreground">
                             Plan your journey
                         </Text>
