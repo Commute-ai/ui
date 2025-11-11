@@ -73,9 +73,12 @@ describe("ItineraryCard", () => {
     it("renders the compact view correctly", () => {
         render(<ItineraryCard itinerary={mockItinerary} />);
 
-        // Check times
-        expect(screen.getByText(formatTime(mockItinerary.start))).toBeTruthy();
-        expect(screen.getByText(formatTime(mockItinerary.end))).toBeTruthy();
+        // Check times (displayed as a range in one element)
+        expect(
+            screen.getByText(
+                `${formatTime(mockItinerary.start)} - ${formatTime(mockItinerary.end)}`
+            )
+        ).toBeTruthy();
         expect(screen.getByText("45 min")).toBeTruthy();
 
         // Check for transit icons
@@ -88,12 +91,11 @@ describe("ItineraryCard", () => {
     it("renders AI insight if it exists", () => {
         render(<ItineraryCard itinerary={mockItineraryWithInsight} />);
 
-        // Check times
+        // Check times (displayed as a range in one element)
         expect(
-            screen.getByText(formatTime(mockItineraryWithInsight.start))
-        ).toBeTruthy();
-        expect(
-            screen.getByText(formatTime(mockItineraryWithInsight.end))
+            screen.getByText(
+                `${formatTime(mockItineraryWithInsight.start)} - ${formatTime(mockItineraryWithInsight.end)}`
+            )
         ).toBeTruthy();
         expect(screen.getByText("45 min")).toBeTruthy();
 
@@ -111,7 +113,11 @@ describe("ItineraryCard", () => {
             <ItineraryCard itinerary={mockItinerary} onToggle={onToggleMock} />
         );
 
-        fireEvent.press(screen.getByText(formatTime(mockItinerary.start)));
+        fireEvent.press(
+            screen.getByText(
+                `${formatTime(mockItinerary.start)} - ${formatTime(mockItinerary.end)}`
+            )
+        );
         expect(onToggleMock).toHaveBeenCalledTimes(1);
     });
 

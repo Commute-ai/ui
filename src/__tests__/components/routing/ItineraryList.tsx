@@ -64,10 +64,14 @@ describe("ItineraryList", () => {
             />
         );
         expect(
-            screen.getByText(formatTime(mockItineraries[0].start))
+            screen.getByText(
+                `${formatTime(mockItineraries[0].start)} - ${formatTime(mockItineraries[0].end)}`
+            )
         ).toBeTruthy();
         expect(
-            screen.getByText(formatTime(mockItineraries[1].start))
+            screen.getByText(
+                `${formatTime(mockItineraries[1].start)} - ${formatTime(mockItineraries[1].end)}`
+            )
         ).toBeTruthy();
     });
 
@@ -80,7 +84,7 @@ describe("ItineraryList", () => {
             />
         );
         const itinerary1 = screen.getByText(
-            formatTime(mockItineraries[0].start)
+            `${formatTime(mockItineraries[0].start)} - ${formatTime(mockItineraries[0].end)}`
         );
 
         // Expand
@@ -101,10 +105,10 @@ describe("ItineraryList", () => {
             />
         );
         const itinerary1Trigger = screen.getByText(
-            formatTime(mockItineraries[0].start)
+            `${formatTime(mockItineraries[0].start)} - ${formatTime(mockItineraries[0].end)}`
         );
         const itinerary2Trigger = screen.getByText(
-            formatTime(mockItineraries[1].start)
+            `${formatTime(mockItineraries[1].start)} - ${formatTime(mockItineraries[1].end)}`
         );
 
         // Expand the first itinerary

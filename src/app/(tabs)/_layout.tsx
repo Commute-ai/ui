@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { Home, Route, User } from "lucide-react-native";
 import { View } from "react-native";
 
 import UserProfileHeader from "@/components/UserProfileHeader";
@@ -11,15 +12,32 @@ export default function TabsLayout() {
             <View className="flex-1">
                 <UserProfileHeader />
                 <Tabs screenOptions={{ headerShown: false }}>
-                    <Tabs.Screen name="index" options={{ title: "Home" }} />
-                    <Tabs.Screen name="routes" options={{ title: "Routes" }} />
                     <Tabs.Screen
-                        name="profile"
-                        options={{ title: "Profile" }}
+                        name="index"
+                        options={{
+                            title: "Home",
+                            tabBarIcon: ({ color, size }) => (
+                                <Home color={color} size={size} />
+                            ),
+                        }}
                     />
                     <Tabs.Screen
-                        name="settings"
-                        options={{ title: "Settings" }}
+                        name="itineraries"
+                        options={{
+                            title: "Itineraries",
+                            tabBarIcon: ({ color, size }) => (
+                                <Route color={color} size={size} />
+                            ),
+                        }}
+                    />
+                    <Tabs.Screen
+                        name="profile"
+                        options={{
+                            title: "Profile",
+                            tabBarIcon: ({ color, size }) => (
+                                <User color={color} size={size} />
+                            ),
+                        }}
                     />
                 </Tabs>
             </View>

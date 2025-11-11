@@ -2,9 +2,9 @@
     "expo": {
         "name": "Commute AI",
         "slug": "commuteai-ui",
-        "version": "0.6.0",
+        "version": "0.7.0",
         "orientation": "portrait",
-        "icon": "./assets/images/icon.png",
+        "icon": "./assets/images/logo.png",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "splash": {
@@ -20,8 +20,8 @@
         "android": {
             "edgeToEdgeEnabled": true,
             "adaptiveIcon": {
-                "foregroundImage": "./assets/images/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
+                "foregroundImage": "./assets/images/logo.png",
+                "backgroundColor": "#000000"
             },
             "package": "com.commuteai.app"
         },
