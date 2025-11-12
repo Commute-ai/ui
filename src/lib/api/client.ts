@@ -70,6 +70,11 @@ class ApiClient {
                 await this._handleErrorResponse(response);
             }
 
+            // Handle 204 No Content response
+            if (response.status === 204) {
+                return undefined as T;
+            }
+
             // Parse successful response
             const contentType = response.headers.get("content-type");
             let data: any;
