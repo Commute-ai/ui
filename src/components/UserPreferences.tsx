@@ -3,11 +3,13 @@ import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
 
+import preferencesApi, { type Preference } from "@/lib/api/preferences";
+
+import { useAuth } from "@/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { useAuth } from "@/hooks/useAuth";
-import preferencesApi, { type Preference } from "@/lib/api/preferences";
 
 const UserPreferences = () => {
     const { isLoaded } = useAuth();
@@ -48,9 +50,7 @@ const UserPreferences = () => {
     const handleRemovePreference = async (preferenceId: number) => {
         try {
             await preferencesApi.deletePreference(preferenceId);
-            setPreferences(
-                preferences.filter((p) => p.id !== preferenceId)
-            );
+            setPreferences(preferences.filter((p) => p.id !== preferenceId));
         } catch (error) {
             console.error("Failed to delete preference:", error);
         }
@@ -78,6 +78,7 @@ const UserPreferences = () => {
                             </Text>
                         </View>
                         <TouchableOpacity
+                            testID={`remove-preference-${pref.id}`}
                             onPress={() => handleRemovePreference(pref.id)}
                             className="rounded-full p-0.5 transition-colors hover:bg-purple-200"
                         >
@@ -95,6 +96,7 @@ const UserPreferences = () => {
                     className="flex-1"
                 />
                 <Button
+                    testID="add-preference-button"
                     onPress={handleAddPreference}
                     disabled={!newPreference.trim()}
                     size="icon"
