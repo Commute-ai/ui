@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "expo-router";
 import { LogOut } from "lucide-react-native";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -11,6 +12,7 @@ import { Text } from "@/components/ui/text";
 
 const UserProfileHeader: React.FC = () => {
     const { user, signOut, isLoaded } = useAuth();
+    const insets = useSafeAreaInsets();
 
     const handleLogout = async () => {
         try {
@@ -21,7 +23,10 @@ const UserProfileHeader: React.FC = () => {
     };
 
     return (
-        <View className="w-full flex-row items-center justify-between border-b border-border bg-card px-4 py-3">
+        <View
+            className="w-full flex-row items-center justify-between border-b border-border bg-card px-4 py-3"
+            style={{ paddingTop: insets.top + 12 }}
+        >
             {!isLoaded ? (
                 <ActivityIndicator
                     testID="activity-indicator"

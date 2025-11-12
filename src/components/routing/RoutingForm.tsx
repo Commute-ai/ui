@@ -112,7 +112,7 @@ export function RoutingForm({
     return (
         <View className="space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
             {/* Origin Input */}
-            <View className="space-y-2">
+            <View className="py--2">
                 <View className="flex flex-row items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary" />
                     <Text className="text-sm font-medium text-foreground">
@@ -131,7 +131,7 @@ export function RoutingForm({
             </View>
 
             {/* Destination Input */}
-            <View className="space-y-2">
+            <View className="py-2">
                 <View className="flex flex-row items-center gap-2">
                     <Navigation className="h-4 w-4 text-accent" />
                     <Text className="text-sm font-medium text-foreground">
@@ -151,7 +151,7 @@ export function RoutingForm({
             <Button
                 onPress={onSubmit}
                 disabled={!from || !to}
-                className="h-12 w-full bg-primary"
+                className="mt-2 h-12 w-full bg-primary"
             >
                 <Search className="mr-2 h-5 w-5" />
                 <Text className="text-primary-foreground">Search routes</Text>

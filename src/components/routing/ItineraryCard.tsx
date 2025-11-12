@@ -67,10 +67,15 @@ const getModeIcon = (mode: string, line?: string | null) => {
 const ItineraryAIInsight = ({ insight }: { insight?: string | null }) => {
     if (!insight) return null;
     return (
-        <View className="flex flex-row">
-            <View className="flex shrink flex-row items-center justify-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-600">
-                <Sparkles className={"mt-0.5 h-4 w-4"} />
-                <Text className={"font-medium text-blue-600"}>{insight}</Text>
+        <View className="w-full">
+            <View className="flex flex-row items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
+                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
+                <Text
+                    className="flex-1 text-sm font-medium text-blue-600"
+                    numberOfLines={0}
+                >
+                    {insight}
+                </Text>
             </View>
         </View>
     );
@@ -118,58 +123,58 @@ export function ItineraryCard({
                 className="p-4 transition-colors hover:bg-gray-100/30"
                 onPress={onToggle}
             >
-                <View className="flex flex-row items-start gap-4">
+                <View className="flex-column flex items-start gap-2">
                     {/* Time Column */}
-                    <View className="flex min-w-[80px] flex-col items-end">
-                        <Text className="text-2xl font-semibold text-gray-800">
-                            {formatTime(itinerary.start)}
-                        </Text>
-                        <Text className="text-sm text-gray-500">
+                    <View className="flex w-full flex-row items-center justify-between">
+                        <Text className="text-xl font-semibold text-gray-800">
+                            {formatTime(itinerary.start)} -{" "}
                             {formatTime(itinerary.end)}
                         </Text>
-                        <Text className="mt-1 text-xs text-gray-500">
-                            {formatDuration(itinerary.duration)}
-                        </Text>
+                        <View className="flex flex-row items-center gap-2">
+                            <Text className="text-xl font-semibold text-gray-800">
+                                {formatDuration(itinerary.duration)}
+                            </Text>
+                            <View
+                                style={{
+                                    transform: [
+                                        {
+                                            rotate: isExpanded
+                                                ? "180deg"
+                                                : "0deg",
+                                        },
+                                    ],
+                                }}
+                            >
+                                <ChevronDown className="h-5 w-5 text-gray-500" />
+                            </View>
+                        </View>
                     </View>
 
                     {/* Route Details Column */}
-                    <View className="flex-1 space-y-3">
-                        {/* Transit Icons */}
-                        <View className="flex flex-row flex-wrap items-center gap-2">
-                            {itinerary.legs.map((leg, index) => (
-                                <View
-                                    key={index}
-                                    className="flex flex-row items-center gap-1"
-                                >
-                                    {getModeIcon(
-                                        leg.mode,
-                                        leg.route?.short_name
-                                    )}
-                                    {index < itinerary.legs.length - 1 && (
-                                        <View className="mx-1 h-px w-2 bg-gray-200" />
-                                    )}
-                                </View>
-                            ))}
-                        </View>
-
-                        {/* Walk Distance */}
-                        <View className="text-sm text-gray-500">
-                            <Text>
-                                <Footprints className="h-4 w-4 text-gray-500" />{" "}
-                                {Math.round(itinerary.walk_distance)} m walk
-                            </Text>
-                        </View>
-
-                        <ItineraryAIInsight insight={itinerary.ai_insight} />
+                    {/* Transit Icons */}
+                    <View className="flex w-full flex-row flex-wrap items-center justify-center gap-2">
+                        {itinerary.legs.map((leg, index) => (
+                            <View
+                                key={index}
+                                className="flex flex-row items-center gap-1"
+                            >
+                                {getModeIcon(leg.mode, leg.route?.short_name)}
+                                {index < itinerary.legs.length - 1 && (
+                                    <View className="mx-1 h-px w-2 bg-gray-200" />
+                                )}
+                            </View>
+                        ))}
                     </View>
-                    <View
-                        className={cn(
-                            "transition-transform",
-                            isExpanded && "rotate-180"
-                        )}
-                    >
-                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                    </View>
+
+                    {/* Walk Distance */}
+                    {/* <View className="text-sm text-gray-500"> */}
+                    {/*     <Text> */}
+                    {/*         <Footprints className="h-4 w-4 text-gray-500" />{" "} */}
+                    {/*         {Math.round(itinerary.walk_distance)} m walk */}
+                    {/*     </Text> */}
+                    {/* </View> */}
+
+                    <ItineraryAIInsight insight={itinerary.ai_insight} />
                 </View>
             </TouchableOpacity>
 
