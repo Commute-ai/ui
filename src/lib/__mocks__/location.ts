@@ -35,6 +35,44 @@ export const mockLocationService: LocationService = {
     getAllPlaces(): Place[] {
         return [...MOCK_PLACES];
     },
+
+    reverseGeocodeSync(name: string): Place | undefined {
+        return MOCK_PLACES.find((p) => p.name === name);
+    },
+
+    async geocode(name: string): Promise<{ lat: number; lon: number } | null> {
+        const place = this.reverseGeocodeSync(name);
+        if (place) {
+            return {
+                lat: place.coordinates.latitude,
+                lon: place.coordinates.longitude,
+            };
+        }
+        return null;
+    },
+
+    geocodeSync(name: string): { lat: number; lon: number } | null {
+        const place = this.reverseGeocodeSync(name);
+        if (place) {
+            return {
+                lat: place.coordinates.latitude,
+                lon: place.coordinates.longitude,
+            };
+        }
+        return null;
+    },
+
+    async reverseGeocodeAsync(
+        lat: number,
+        lon: number
+    ): Promise<string | null> {
+        const place = MOCK_PLACES.find(
+            (p) =>
+                p.coordinates.latitude === lat &&
+                p.coordinates.longitude === lon
+        );
+        return place?.name || null;
+    },
 };
 
 export const useLocationService = () => ({
@@ -44,6 +82,12 @@ export const useLocationService = () => ({
         mockLocationService.getCurrentLocation.bind(mockLocationService),
     isValidPlace: mockLocationService.isValidPlace.bind(mockLocationService),
     getAllPlaces: mockLocationService.getAllPlaces.bind(mockLocationService),
+    reverseGeocodeSync:
+        mockLocationService.reverseGeocodeSync.bind(mockLocationService),
+    geocode: mockLocationService.geocode.bind(mockLocationService),
+    geocodeSync: mockLocationService.geocodeSync.bind(mockLocationService),
+    reverseGeocodeAsync:
+        mockLocationService.reverseGeocodeAsync.bind(mockLocationService),
 });
 
 export const HARDCODED_PLACES = MOCK_PLACES.map((place) => place.name);
