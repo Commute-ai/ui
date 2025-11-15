@@ -47,7 +47,7 @@ export interface LocationService {
     /**
      * Reverse geocode a location to its name
      */
-    reverseGeocodeAsync(lat: number, lon: number): Promise<string>;
+    reverseGeocodeAsync(lat: number, lon: number): Promise<string | null>;
 }
 
 // Hardcoded places for development - will be replaced with real geo service
@@ -92,7 +92,7 @@ class HardcodedLocationService implements LocationService {
     async getCurrentLocation(): Promise<Place | null> {
         // For now, return Kamppi as the default "current location"
         // In the future, this would use actual geolocation services
-        return this.reverseGeocodeSync("Kamppi");
+        return this.reverseGeocodeSync("Kamppi") || null;
     }
 
     isValidPlace(placeName: string): boolean {
@@ -122,13 +122,16 @@ class HardcodedLocationService implements LocationService {
         return null;
     }
 
-    async reverseGeocodeAsync(lat: number, lon: number): Promise<string> {
+    async reverseGeocodeAsync(
+        lat: number,
+        lon: number
+    ): Promise<string | null> {
         const place = this.places.find(
             (p) =>
                 p.coordinates.latitude === lat &&
                 p.coordinates.longitude === lon
         );
-        return place ? place.name : "Unknown Location";
+        return place?.name || null;
     }
 }
 

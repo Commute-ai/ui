@@ -9,16 +9,19 @@ import {
 
 import preferencesApi, {
     Route,
+    RoutePreference,
     RouteWithPreferences,
 } from "@/lib/api/preferences";
 
 import RouteSpecificPreferences from "@/components/RouteSpecificPreferences";
 
+const getRouteKey = (route: Route) =>
+    `${route.fromLat},${route.fromLon},${route.toLat},${route.toLon}`;
+
 // Mock data
 const MOCK_ROUTES_WITH_PREFERENCES: RouteWithPreferences[] = [
     {
         route: {
-            id: 1,
             from: "Exactum",
             to: "Kamppi",
             fromLat: 60.204,
@@ -27,14 +30,40 @@ const MOCK_ROUTES_WITH_PREFERENCES: RouteWithPreferences[] = [
             toLon: 24.932,
         },
         preferences: [
-            { id: 1, prompt: "Prefer bus 506" },
-            { id: 2, prompt: "Never use the tram for this route" },
-            { id: 3, prompt: "Avoid rush hour metro" },
+            {
+                id: 1,
+                prompt: "Prefer bus 506",
+                created_at: "2023-01-01T12:00:00.000Z",
+                from_latitude: 60.204,
+                from_longitude: 24.962,
+                to_latitude: 60.169,
+                to_longitude: 24.932,
+                updated_at: null,
+            },
+            {
+                id: 2,
+                prompt: "Never use the tram for this route",
+                created_at: "2023-01-01T12:00:00.000Z",
+                from_latitude: 60.204,
+                from_longitude: 24.962,
+                to_latitude: 60.169,
+                to_longitude: 24.932,
+                updated_at: null,
+            },
+            {
+                id: 3,
+                prompt: "Avoid rush hour metro",
+                created_at: "2023-01-01T12:00:00.000Z",
+                from_latitude: 60.204,
+                from_longitude: 24.962,
+                to_latitude: 60.169,
+                to_longitude: 24.932,
+                updated_at: null,
+            },
         ],
     },
     {
         route: {
-            id: 2,
             from: "Kamppi",
             to: "Pasila",
             fromLat: 60.169,
@@ -43,24 +72,50 @@ const MOCK_ROUTES_WITH_PREFERENCES: RouteWithPreferences[] = [
             toLon: 24.934,
         },
         preferences: [
-            { id: 4, prompt: "Always use metro when available" },
-            { id: 5, prompt: "Avoid walking through Töölö" },
+            {
+                id: 4,
+                prompt: "Always use metro when available",
+                created_at: "2023-01-01T12:00:00.000Z",
+                from_latitude: 60.169,
+                from_longitude: 24.932,
+                to_latitude: 60.199,
+                to_longitude: 24.934,
+                updated_at: null,
+            },
+            {
+                id: 5,
+                prompt: "Avoid walking through Töölö",
+                created_at: "2023-01-01T12:00:00.000Z",
+                from_latitude: 60.169,
+                from_longitude: 24.932,
+                to_latitude: 60.199,
+                to_longitude: 24.934,
+                updated_at: null,
+            },
         ],
     },
 ];
 
 let mockRoutesWithPreferences: RouteWithPreferences[];
 let mockNextPreferenceId: number;
-let mockNextRouteId: number;
 
 // Mock the API module
 jest.mock("@/lib/api/preferences", () => ({
     getRoutesWithPreferences: jest.fn(async () => mockRoutesWithPreferences),
     addRouteSpecificPreference: jest.fn(
         async (route: Route, { prompt }: { prompt: string }) => {
-            const newPreference = { id: mockNextPreferenceId++, prompt };
+            const newPreference: RoutePreference = {
+                id: mockNextPreferenceId++,
+                prompt,
+                created_at: new Date().toISOString(),
+                from_latitude: route.fromLat,
+                from_longitude: route.fromLon,
+                to_latitude: route.toLat,
+                to_longitude: route.toLon,
+                updated_at: null,
+            };
             mockRoutesWithPreferences = mockRoutesWithPreferences.map((r) =>
-                r.route.id === route.id
+                getRouteKey(r.route) === getRouteKey(route)
                     ? { ...r, preferences: [...r.preferences, newPreference] }
                     : r
             );
@@ -70,7 +125,7 @@ jest.mock("@/lib/api/preferences", () => ({
     deleteRouteSpecificPreference: jest.fn(
         async (route: Route, preferenceId: number) => {
             mockRoutesWithPreferences = mockRoutesWithPreferences.map((r) =>
-                r.route.id === route.id
+                getRouteKey(r.route) === getRouteKey(route)
                     ? {
                           ...r,
                           preferences: r.preferences.filter(
@@ -84,7 +139,6 @@ jest.mock("@/lib/api/preferences", () => ({
     addSavedRoute: jest.fn(async (from: string, to: string) => {
         const newRoute: RouteWithPreferences = {
             route: {
-                id: mockNextRouteId++,
                 from,
                 to,
                 fromLat: 60.224, // Dummy coords
@@ -101,7 +155,6 @@ jest.mock("@/lib/api/preferences", () => ({
             JSON.stringify(MOCK_ROUTES_WITH_PREFERENCES)
         );
         mockNextPreferenceId = 6;
-        mockNextRouteId = 3;
     },
 }));
 
@@ -115,8 +168,8 @@ jest.mock("@/lib/location", () => ({
 
 describe("RouteSpecificPreferences component", () => {
     // Define route keys based on mock data
-    const route1Key = `${MOCK_ROUTES_WITH_PREFERENCES[0].route.fromLat},${MOCK_ROUTES_WITH_PREFERENCES[0].route.fromLon},${MOCK_ROUTES_WITH_PREFERENCES[0].route.toLat},${MOCK_ROUTES_WITH_PREFERENCES[0].route.toLon}`;
-    const route2Key = `${MOCK_ROUTES_WITH_PREFERENCES[1].route.fromLat},${MOCK_ROUTES_WITH_PREFERENCES[1].route.fromLon},${MOCK_ROUTES_WITH_PREFERENCES[1].route.toLat},${MOCK_ROUTES_WITH_PREFERENCES[1].route.toLon}`;
+    const route1Key = getRouteKey(MOCK_ROUTES_WITH_PREFERENCES[0].route);
+    const route2Key = getRouteKey(MOCK_ROUTES_WITH_PREFERENCES[1].route);
 
     beforeEach(() => {
         preferencesApi.__resetMocks();
@@ -182,8 +235,9 @@ describe("RouteSpecificPreferences component", () => {
     });
 
     it("should add a new route", async () => {
-        const { getByTestId, findByText, findByPlaceholderText, rerender } =
-            render(<RouteSpecificPreferences />);
+        const { getByTestId, findByText, findByPlaceholderText } = render(
+            <RouteSpecificPreferences />
+        );
 
         const addNewRouteButton = getByTestId("add-new-route-button");
         fireEvent.press(addNewRouteButton);

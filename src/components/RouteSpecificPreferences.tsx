@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { Portal } from "@rn-primitives/portal";
 import { MapPin, Plus, X } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
 

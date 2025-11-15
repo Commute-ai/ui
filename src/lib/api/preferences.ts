@@ -12,8 +12,8 @@ interface RouteData {
 }
 
 export interface Route extends RouteData {
-    from: string;
-    to: string;
+    from: string | null;
+    to: string | null;
 }
 
 const getRouteKey = (route: RouteData) =>
@@ -54,13 +54,10 @@ const PreferencesResponseSchema = z.array(PreferenceSchema);
 
 export type Preference = z.infer<typeof PreferenceSchema>;
 
-const PreferenceCreateSchema = PreferenceSchema.omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-
-export type PreferenceCreate = z.infer<typeof PreferenceCreateSchema>;
+export type PreferenceCreate = Omit<
+    Preference,
+    "id" | "created_at" | "updated_at"
+>;
 
 const RoutePreferenceSchema = z.object({
     id: z.number(),
@@ -73,17 +70,7 @@ const RoutePreferenceSchema = z.object({
     updated_at: z.string().datetime().nullable().optional(),
 });
 
-const RoutePreferencesResponseSchema = z.array(RoutePreferenceSchema);
-
 export type RoutePreference = z.infer<typeof RoutePreferenceSchema>;
-
-const RoutePreferenceCreateSchema = RoutePreferenceSchema.omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-
-export type RoutePreferenceCreate = z.infer<typeof RoutePreferenceCreateSchema>;
 
 export interface RouteWithPreferences {
     route: Route;
@@ -213,6 +200,7 @@ const preferencesApi = {
         const newPreference: RoutePreference = {
             id: nextId++, // Incrementing ID to ensure uniqueness
             ...preference,
+            prompt: preference.prompt,
             from_latitude: espoo.lat,
             from_longitude: espoo.lon,
             to_latitude: helsinki.lat,
