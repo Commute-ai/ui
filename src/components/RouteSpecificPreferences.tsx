@@ -1,14 +1,11 @@
 import { useState } from "react";
 
 import { MapPin, Plus, X } from "lucide-react-native";
-import {
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { TextInput, TouchableOpacity, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+
 import { PlaceInput } from "./routing/PlaceInput";
 
 export default function RouteSpecificPreferences() {
@@ -51,15 +48,15 @@ export default function RouteSpecificPreferences() {
                           ...route,
                           preferences: [...route.preferences, newPreference],
                       }
-                    : route,
-            ),
+                    : route
+            )
         );
         setNewPreferenceTexts((prev) => ({ ...prev, [routeId]: "" }));
     };
 
     const handleDeleteRoutePreference = (
         routeId: number,
-        prefIndex: number,
+        prefIndex: number
     ) => {
         setSpecificRoutePreferences((prev) =>
             prev.map((route) =>
@@ -67,11 +64,11 @@ export default function RouteSpecificPreferences() {
                     ? {
                           ...route,
                           preferences: route.preferences.filter(
-                              (_, i) => i !== prefIndex,
+                              (_, i) => i !== prefIndex
                           ),
                       }
-                    : route,
-            ),
+                    : route
+            )
         );
     };
 
@@ -104,6 +101,7 @@ export default function RouteSpecificPreferences() {
                 {specificRoutePreferences.map((route) => (
                     <View
                         key={route.id}
+                        testID={`route-preferences-${route.id}`}
                         className="rounded-lg border border-border bg-card p-4 shadow-sm"
                     >
                         {/* Route Header */}
@@ -113,9 +111,7 @@ export default function RouteSpecificPreferences() {
                                 <Text className="text-foreground">
                                     {route.from}
                                 </Text>
-                                <Text className="text-muted-foreground">
-                                    →
-                                </Text>
+                                <Text className="text-muted-foreground">→</Text>
                                 <Text className="text-foreground">
                                     {route.to}
                                 </Text>
@@ -135,10 +131,11 @@ export default function RouteSpecificPreferences() {
                                         </Text>
                                     </View>
                                     <TouchableOpacity
+                                        testID={`delete-preference-${route.id}-${index}`}
                                         onPress={() =>
                                             handleDeleteRoutePreference(
                                                 route.id,
-                                                index,
+                                                index
                                             )
                                         }
                                     >
@@ -151,6 +148,7 @@ export default function RouteSpecificPreferences() {
                         {/* Add Preference Input */}
                         <View className="mt-4 flex-row items-center gap-2">
                             <TextInput
+                                testID={`add-preference-input-${route.id}`}
                                 placeholder="Add a new preference..."
                                 value={newPreferenceTexts[route.id] || ""}
                                 onChangeText={(text) =>
@@ -162,8 +160,11 @@ export default function RouteSpecificPreferences() {
                                 className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
                             />
                             <Button
+                                testID={`add-preference-button-${route.id}`}
                                 size="sm"
-                                onPress={() => handleAddRoutePreference(route.id)}
+                                onPress={() =>
+                                    handleAddRoutePreference(route.id)
+                                }
                                 disabled={!newPreferenceTexts[route.id]?.trim()}
                             >
                                 <Plus className="h-4 w-4 text-primary-foreground" />
@@ -178,6 +179,7 @@ export default function RouteSpecificPreferences() {
                 <View className="mt-4 rounded-lg border border-border bg-card p-4 shadow-sm">
                     <View className="mb-3 space-y-2">
                         <PlaceInput
+                            testID="new-route-from-input"
                             placeholder="From"
                             value={newRouteFrom}
                             onChangeText={setNewRouteFrom}
@@ -185,6 +187,7 @@ export default function RouteSpecificPreferences() {
                             onSuggestionPress={() => {}}
                         />
                         <PlaceInput
+                            testID="new-route-to-input"
                             placeholder="To"
                             value={newRouteTo}
                             onChangeText={setNewRouteTo}
@@ -194,14 +197,18 @@ export default function RouteSpecificPreferences() {
                     </View>
                     <View className="flex-row justify-end gap-2">
                         <Button
+                            testID="cancel-add-route-button"
                             variant="ghost"
                             onPress={() => setIsAddingNewRoute(false)}
                         >
                             <Text>Cancel</Text>
                         </Button>
                         <Button
+                            testID="add-route-button"
                             onPress={handleAddNewRoute}
-                            disabled={!newRouteFrom.trim() || !newRouteTo.trim()}
+                            disabled={
+                                !newRouteFrom.trim() || !newRouteTo.trim()
+                            }
                         >
                             <Text>Add Route</Text>
                         </Button>
@@ -209,6 +216,7 @@ export default function RouteSpecificPreferences() {
                 </View>
             ) : (
                 <Button
+                    testID="add-new-route-button"
                     variant="outline"
                     className="mt-4 w-full border-dashed bg-transparent"
                     onPress={() => setIsAddingNewRoute(true)}
