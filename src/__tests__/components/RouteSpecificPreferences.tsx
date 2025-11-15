@@ -7,7 +7,7 @@ import {
     within,
 } from "@testing-library/react-native";
 
-import { Route, RouteWithPreferences } from "@/lib/api/preferences";
+import preferencesApi from "@/lib/api/preferences";
 
 import RouteSpecificPreferences from "@/components/RouteSpecificPreferences";
 
@@ -116,7 +116,6 @@ describe("RouteSpecificPreferences component", () => {
     const route2Key = `${MOCK_ROUTES_WITH_PREFERENCES[1].route.fromLat},${MOCK_ROUTES_WITH_PREFERENCES[1].route.fromLon},${MOCK_ROUTES_WITH_PREFERENCES[1].route.toLat},${MOCK_ROUTES_WITH_PREFERENCES[1].route.toLon}`;
 
     beforeEach(() => {
-        const preferencesApi = require("@/lib/api/preferences");
         preferencesApi.__resetMocks();
     });
 
