@@ -1,90 +1,156 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { Portal } from "@rn-primitives/portal";
 import { MapPin, Plus, X } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
+
+import preferencesApi, {
+    Route,
+    RouteWithPreferences,
+} from "@/lib/api/preferences";
+import { useLocationService } from "@/lib/location";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
 import { PlaceInput } from "./routing/PlaceInput";
 
+const getRouteKey = (route: Route) =>
+    `${route.fromLat},${route.fromLon},${route.toLat},${route.toLon}`;
+
 export default function RouteSpecificPreferences() {
-    const [specificRoutePreferences, setSpecificRoutePreferences] = useState([
-        {
-            id: 1,
-            from: "Exactum",
-            to: "Kamppi",
-            preferences: [
-                "Never use the tram for this route",
-                "Prefer bus 506",
-                "Avoid rush hour metro",
-            ],
-        },
-        {
-            id: 2,
-            from: "Kamppi",
-            to: "Pasila",
-            preferences: [
-                "Always use metro when available",
-                "Avoid walking through Töölö",
-            ],
-        },
-    ]);
+    const { getSuggestions, isValidPlace } = useLocationService();
+    const [routesWithPreferences, setRoutesWithPreferences] = useState<
+        RouteWithPreferences[]
+    >([]);
     const [newPreferenceTexts, setNewPreferenceTexts] = useState<
-        Record<number, string>
+        Record<string, string>
     >({});
     const [isAddingNewRoute, setIsAddingNewRoute] = useState(false);
     const [newRouteFrom, setNewRouteFrom] = useState("");
     const [newRouteTo, setNewRouteTo] = useState("");
+    const [fromSuggestions, setFromSuggestions] = useState<string[]>([]);
+    const [toSuggestions, setToSuggestions] = useState<string[]>([]);
 
-    const handleAddRoutePreference = (routeId: number) => {
-        const newPreference = newPreferenceTexts[routeId]?.trim();
-        if (!newPreference) return;
+    const fetchRoutesWithPreferences = useCallback(async () => {
+        try {
+            const data = await preferencesApi.getRoutesWithPreferences();
+            setRoutesWithPreferences(data);
+        } catch (error) {
+            // In a real app, handle this error
+            console.error("Failed to fetch preferences:", error);
+        }
+    }, []);
 
-        setSpecificRoutePreferences((prev) =>
-            prev.map((route) =>
-                route.id === routeId
-                    ? {
-                          ...route,
-                          preferences: [...route.preferences, newPreference],
-                      }
-                    : route
-            )
-        );
-        setNewPreferenceTexts((prev) => ({ ...prev, [routeId]: "" }));
+    useEffect(() => {
+        fetchRoutesWithPreferences();
+    }, [fetchRoutesWithPreferences]);
+
+    const handleFromChange = async (text: string) => {
+        setNewRouteFrom(text);
+        if (text.trim().length > 0) {
+            const suggestions = await getSuggestions(text);
+            setFromSuggestions(
+                suggestions.map((p) => p.name).filter((n): n is string => !!n)
+            );
+        } else {
+            setFromSuggestions([]);
+        }
     };
 
-    const handleDeleteRoutePreference = (
-        routeId: number,
-        prefIndex: number
-    ) => {
-        setSpecificRoutePreferences((prev) =>
-            prev.map((route) =>
-                route.id === routeId
-                    ? {
-                          ...route,
-                          preferences: route.preferences.filter(
-                              (_, i) => i !== prefIndex
-                          ),
-                      }
-                    : route
-            )
-        );
+    const handleToChange = async (text: string) => {
+        setNewRouteTo(text);
+        if (text.trim().length > 0) {
+            const suggestions = await getSuggestions(text);
+            setToSuggestions(
+                suggestions.map((p) => p.name).filter((n): n is string => !!n)
+            );
+        } else {
+            setToSuggestions([]);
+        }
     };
 
-    const handleAddNewRoute = () => {
-        if (!newRouteFrom.trim() || !newRouteTo.trim()) return;
+    const onFromSuggestionPress = (placeName: string) => {
+        setNewRouteFrom(placeName);
+        setFromSuggestions([]);
+    };
 
-        const newRoute = {
-            id: Date.now(), // Simple unique ID
-            from: newRouteFrom.trim(),
-            to: newRouteTo.trim(),
-            preferences: [],
-        };
+    const onToSuggestionPress = (placeName: string) => {
+        setNewRouteTo(placeName);
+        setToSuggestions([]);
+    };
 
-        setSpecificRoutePreferences((prev) => [...prev, newRoute]);
+    const handleAddRoutePreference = useCallback(
+        async (route: Route) => {
+            const routeKey = getRouteKey(route);
+            const prompt = newPreferenceTexts[routeKey]?.trim();
+            if (!prompt) return;
+
+            const newPref = await preferencesApi.addRouteSpecificPreference(
+                route,
+                {
+                    prompt,
+                }
+            );
+
+            setRoutesWithPreferences((prev) =>
+                prev.map((r) =>
+                    getRouteKey(r.route) === routeKey
+                        ? {
+                              ...r,
+                              preferences: [...r.preferences, newPref],
+                          }
+                        : r
+                )
+            );
+            setNewPreferenceTexts((prev) => ({ ...prev, [routeKey]: "" }));
+        },
+        [newPreferenceTexts]
+    );
+
+    const handleDeleteRoutePreference = useCallback(
+        async (route: Route, preferenceId: number) => {
+            await preferencesApi.deleteRouteSpecificPreference(
+                route,
+                preferenceId
+            );
+            const routeKey = getRouteKey(route);
+            setRoutesWithPreferences((prev) =>
+                prev.map((r) =>
+                    getRouteKey(r.route) === routeKey
+                        ? {
+                              ...r,
+                              preferences: r.preferences.filter(
+                                  (p) => p.id !== preferenceId
+                              ),
+                          }
+                        : r
+                )
+            );
+        },
+        []
+    );
+
+    const handleAddNewRoute = async () => {
+        const fromName = newRouteFrom.trim();
+        const toName = newRouteTo.trim();
+        if (!fromName || !toName) return;
+
+        if (!isValidPlace(fromName) || !isValidPlace(toName)) {
+            // In a real app, you would show an error message to the user
+            console.warn("Invalid place name provided");
+            return;
+        }
+
+        await preferencesApi.addSavedRoute(fromName, toName);
+
+        // Refetch the routes to get the updated list
+        await fetchRoutesWithPreferences();
+
         setNewRouteFrom("");
         setNewRouteTo("");
+        setFromSuggestions([]);
+        setToSuggestions([]);
         setIsAddingNewRoute(false);
     };
 
@@ -98,83 +164,86 @@ export default function RouteSpecificPreferences() {
             </Text>
 
             <View className="space-y-3">
-                {specificRoutePreferences.map((route) => (
-                    <View
-                        key={route.id}
-                        testID={`route-preferences-${route.id}`}
-                        className="rounded-lg border border-border bg-card p-4 shadow-sm"
-                    >
-                        {/* Route Header */}
-                        <View className="mb-3 flex flex-row items-center gap-2">
-                            <MapPin className="h-4 w-4 text-teal-600" />
-                            <View className="flex flex-row items-center gap-2 text-sm font-medium">
-                                <Text className="text-foreground">
-                                    {route.from}
-                                </Text>
-                                <Text className="text-muted-foreground">→</Text>
-                                <Text className="text-foreground">
-                                    {route.to}
-                                </Text>
+                {routesWithPreferences.map(({ route, preferences }) => {
+                    const routeKey = getRouteKey(route);
+                    return (
+                        <View
+                            key={routeKey}
+                            testID={`route-preferences-${routeKey}`}
+                            className="rounded-lg border border-border bg-card p-4 shadow-sm"
+                        >
+                            <View className="mb-3 flex flex-row items-center gap-2">
+                                <MapPin className="h-4 w-4 text-teal-600" />
+                                <View className="flex flex-row items-center gap-2 text-sm font-medium">
+                                    <Text className="text-foreground">
+                                        {route.from}
+                                    </Text>
+                                    <Text className="text-muted-foreground">
+                                        →
+                                    </Text>
+                                    <Text className="text-foreground">
+                                        {route.to}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View className="flex flex-row flex-wrap items-start gap-2">
+                                {preferences.map((pref) => (
+                                    <View
+                                        key={pref.id}
+                                        className="shrink flex-row items-center gap-2 rounded-full border border-teal-200 bg-teal-100 px-3 py-1.5"
+                                    >
+                                        <View className="shrink">
+                                            <Text className="text-sm text-teal-900">
+                                                {pref.prompt}
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity
+                                            testID={`delete-preference-${routeKey}-${pref.id}`}
+                                            onPress={() =>
+                                                handleDeleteRoutePreference(
+                                                    route,
+                                                    pref.id
+                                                )
+                                            }
+                                        >
+                                            <X className="h-3 w-3 text-teal-900" />
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </View>
+
+                            <View className="mt-4 flex-row items-center gap-2">
+                                <TextInput
+                                    testID={`add-preference-input-${routeKey}`}
+                                    placeholder="Add a new preference..."
+                                    value={newPreferenceTexts[routeKey] || ""}
+                                    onChangeText={(text) =>
+                                        setNewPreferenceTexts((prev) => ({
+                                            ...prev,
+                                            [routeKey]: text,
+                                        }))
+                                    }
+                                    className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+                                />
+                                <Button
+                                    testID={`add-preference-button-${routeKey}`}
+                                    size="sm"
+                                    onPress={() =>
+                                        handleAddRoutePreference(route)
+                                    }
+                                    disabled={
+                                        !newPreferenceTexts[routeKey]?.trim()
+                                    }
+                                >
+                                    <Plus className="h-4 w-4 text-primary-foreground" />
+                                </Button>
                             </View>
                         </View>
-
-                        {/* Route Preferences */}
-                        <View className="flex flex-row flex-wrap items-start gap-2">
-                            {route.preferences.map((pref, index) => (
-                                <View
-                                    key={index}
-                                    className="shrink flex-row items-center gap-2 rounded-full border border-teal-200 bg-teal-100 px-3 py-1.5"
-                                >
-                                    <View className="shrink">
-                                        <Text className="text-sm text-teal-900">
-                                            {pref}
-                                        </Text>
-                                    </View>
-                                    <TouchableOpacity
-                                        testID={`delete-preference-${route.id}-${index}`}
-                                        onPress={() =>
-                                            handleDeleteRoutePreference(
-                                                route.id,
-                                                index
-                                            )
-                                        }
-                                    >
-                                        <X className="h-3 w-3 text-teal-900" />
-                                    </TouchableOpacity>
-                                </View>
-                            ))}
-                        </View>
-
-                        {/* Add Preference Input */}
-                        <View className="mt-4 flex-row items-center gap-2">
-                            <TextInput
-                                testID={`add-preference-input-${route.id}`}
-                                placeholder="Add a new preference..."
-                                value={newPreferenceTexts[route.id] || ""}
-                                onChangeText={(text) =>
-                                    setNewPreferenceTexts((prev) => ({
-                                        ...prev,
-                                        [route.id]: text,
-                                    }))
-                                }
-                                className="flex-1 rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
-                            />
-                            <Button
-                                testID={`add-preference-button-${route.id}`}
-                                size="sm"
-                                onPress={() =>
-                                    handleAddRoutePreference(route.id)
-                                }
-                                disabled={!newPreferenceTexts[route.id]?.trim()}
-                            >
-                                <Plus className="h-4 w-4 text-primary-foreground" />
-                            </Button>
-                        </View>
-                    </View>
-                ))}
+                    );
+                })}
             </View>
 
-            {/* Add New Route Section */}
             {isAddingNewRoute ? (
                 <View className="mt-4 rounded-lg border border-border bg-card p-4 shadow-sm">
                     <View className="mb-3 space-y-2">
@@ -182,17 +251,17 @@ export default function RouteSpecificPreferences() {
                             testID="new-route-from-input"
                             placeholder="From"
                             value={newRouteFrom}
-                            onChangeText={setNewRouteFrom}
-                            suggestions={[]}
-                            onSuggestionPress={() => {}}
+                            onChangeText={handleFromChange}
+                            suggestions={fromSuggestions}
+                            onSuggestionPress={onFromSuggestionPress}
                         />
                         <PlaceInput
                             testID="new-route-to-input"
                             placeholder="To"
                             value={newRouteTo}
-                            onChangeText={setNewRouteTo}
-                            suggestions={[]}
-                            onSuggestionPress={() => {}}
+                            onChangeText={handleToChange}
+                            suggestions={toSuggestions}
+                            onSuggestionPress={onToSuggestionPress}
                         />
                     </View>
                     <View className="flex-row justify-end gap-2">

@@ -28,6 +28,26 @@ export interface LocationService {
      * Get all available places (for testing/development)
      */
     getAllPlaces(): Place[];
+
+    /**
+     * Get a place by its name
+     */
+    reverseGeocodeSync(name: string): Place | undefined;
+
+    /**
+     * Geocode a name to a location (async)
+     */
+    geocode(name: string): Promise<{ lat: number; lon: number } | null>;
+
+    /**
+     * Geocode a name to a location (sync)
+     */
+    geocodeSync(name: string): { lat: number; lon: number } | null;
+
+    /**
+     * Reverse geocode a location to its name
+     */
+    reverseGeocodeAsync(lat: number, lon: number): Promise<string>;
 }
 
 // Hardcoded places for development - will be replaced with real geo service
@@ -72,7 +92,7 @@ class HardcodedLocationService implements LocationService {
     async getCurrentLocation(): Promise<Place | null> {
         // For now, return Kamppi as the default "current location"
         // In the future, this would use actual geolocation services
-        return this.places.find((place) => place.name === "Kamppi") || null;
+        return this.reverseGeocodeSync("Kamppi");
     }
 
     isValidPlace(placeName: string): boolean {
@@ -81,6 +101,34 @@ class HardcodedLocationService implements LocationService {
 
     getAllPlaces(): Place[] {
         return [...this.places];
+    }
+
+    reverseGeocodeSync(name: string): Place | undefined {
+        return this.places.find((p) => p.name === name);
+    }
+
+    async geocode(name: string): Promise<{ lat: number; lon: number } | null> {
+        return this.geocodeSync(name);
+    }
+
+    geocodeSync(name: string): { lat: number; lon: number } | null {
+        const place = this.reverseGeocodeSync(name);
+        if (place) {
+            return {
+                lat: place.coordinates.latitude,
+                lon: place.coordinates.longitude,
+            };
+        }
+        return null;
+    }
+
+    async reverseGeocodeAsync(lat: number, lon: number): Promise<string> {
+        const place = this.places.find(
+            (p) =>
+                p.coordinates.latitude === lat &&
+                p.coordinates.longitude === lon
+        );
+        return place ? place.name : "Unknown Location";
     }
 }
 
@@ -100,5 +148,11 @@ export const useLocationService = () => {
             locationService.getCurrentLocation.bind(locationService),
         isValidPlace: locationService.isValidPlace.bind(locationService),
         getAllPlaces: locationService.getAllPlaces.bind(locationService),
+        reverseGeocodeSync:
+            locationService.reverseGeocodeSync.bind(locationService),
+        geocode: locationService.geocode.bind(locationService),
+        geocodeSync: locationService.geocodeSync.bind(locationService),
+        reverseGeocodeAsync:
+            locationService.reverseGeocodeAsync.bind(locationService),
     };
 };
