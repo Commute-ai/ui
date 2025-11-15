@@ -7,7 +7,10 @@ import {
     within,
 } from "@testing-library/react-native";
 
-import preferencesApi from "@/lib/api/preferences";
+import preferencesApi, {
+    Route,
+    RouteWithPreferences,
+} from "@/lib/api/preferences";
 
 import RouteSpecificPreferences from "@/components/RouteSpecificPreferences";
 
