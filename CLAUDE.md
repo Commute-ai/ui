@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Commute.ai is a React Native mobile application built with Expo and TypeScript that provides intelligent commute planning. The app is currently at version 0.7.0 and uses Expo SDK 54.
+Commute.ai is a React Native mobile application built with Expo and TypeScript that provides intelligent commute planning. The app is currently at version 0.8.0 and uses Expo SDK 54.
 
 ## Development Commands
 

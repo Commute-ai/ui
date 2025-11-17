@@ -18,6 +18,7 @@ interface PlaceInputProps {
     onSuggestionPress: (suggestion: string) => void;
     showHereButton?: boolean;
     onHerePress?: () => void;
+    testID?: string;
 }
 
 export function PlaceInput({
@@ -28,6 +29,7 @@ export function PlaceInput({
     onSuggestionPress,
     showHereButton,
     onHerePress,
+    testID,
 }: PlaceInputProps) {
     const inputRef = useRef<TextInput>(null);
     const [inputLayout, setInputLayout] = useState({
@@ -78,6 +80,7 @@ export function PlaceInput({
                         placeholderTextColor="#6B7280"
                         onFocus={measureInput}
                         onLayout={measureInput}
+                        testID={testID}
                     />
                     {showHereButton && (
                         <View className="absolute inset-y-0 right-2 justify-center">
