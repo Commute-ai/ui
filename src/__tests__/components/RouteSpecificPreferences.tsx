@@ -99,20 +99,6 @@ jest.mock("@/lib/api/preferences", () => ({
             preferences: r.preferences.filter((p) => p.id !== preferenceId),
         }));
     }),
-    addSavedRoute: jest.fn(async (from: string, to: string) => {
-        const newRoute: RoutePreferences = {
-            from: {
-                coordinates: { latitude: 0, longitude: 0 },
-                name: from,
-            },
-            to: {
-                coordinates: { latitude: 0, longitude: 0 },
-                name: to,
-            },
-            preferences: [],
-        };
-        mockRoutesWithPreferences.push(newRoute);
-    }),
 }));
 
 // Mock the location service
@@ -120,8 +106,14 @@ jest.mock("@/lib/location", () => ({
     useLocationService: () => ({
         getSuggestions: jest.fn(() =>
             Promise.resolve([
-                { name: "Helsinki", lat: 60.1699, lon: 24.9384 },
-                { name: "Espoo", lat: 60.2055, lon: 24.6559 },
+                {
+                    name: "Helsinki",
+                    coordinates: { latitude: 60.1699, longitude: 24.9384 },
+                },
+                {
+                    name: "Espoo",
+                    coordinates: { latitude: 60.2055, longitude: 24.6559 },
+                },
             ])
         ),
         isValidPlace: jest.fn((place: string) =>
@@ -236,10 +228,9 @@ describe("RouteSpecificPreferences", () => {
         fireEvent.press(addButton);
 
         await waitFor(() => {
-            expect(preferencesApi.addSavedRoute).toHaveBeenCalledWith(
-                "Helsinki",
-                "Espoo"
-            );
+            // Check that the new route appears in the UI
+            expect(screen.getByText("Helsinki")).toBeTruthy();
+            expect(screen.getByText("Espoo")).toBeTruthy();
         });
     });
 });
