@@ -40,22 +40,6 @@ type RoutePreferenceResponse = z.infer<typeof RoutePreferenceResponseSchema>;
 const getRouteKey = (from: Coordinates, to: Coordinates) =>
     `${from.latitude},${from.longitude},${to.latitude},${to.longitude}`;
 
-// Some initial routes for development
-const exactum = locationService.geocodeSync("Exactum")!;
-const kamppi = locationService.geocodeSync("Kamppi")!;
-const pasila = locationService.geocodeSync("Pasila")!;
-
-const initialRoutes: Coordinates[] = [
-    { latitude: exactum.lat, longitude: exactum.lon },
-    { latitude: kamppi.lat, longitude: kamppi.lon },
-    { latitude: pasila.lat, longitude: pasila.lon },
-];
-
-let savedRoutes: { from: Coordinates; to: Coordinates }[] = [
-    { from: initialRoutes[0], to: initialRoutes[1] },
-    { from: initialRoutes[1], to: initialRoutes[2] },
-];
-
 const preferencesApi = {
     async getPreferences(): Promise<Preference[]> {
         return apiClient.get<Preference[]>(
@@ -131,22 +115,6 @@ const preferencesApi = {
             });
         }
 
-        // Add saved routes that don't have preferences yet
-        for (const savedRoute of savedRoutes) {
-            const routeKey = getRouteKey(savedRoute.from, savedRoute.to);
-            if (!routeMap.has(routeKey)) {
-                routeMap.set(routeKey, {
-                    from: {
-                        coordinates: savedRoute.from,
-                    },
-                    to: {
-                        coordinates: savedRoute.to,
-                    },
-                    preferences: [],
-                });
-            }
-        }
-
         // Add location names and return
         const result: RoutePreferences[] = [];
         for (const route of routeMap.values()) {
@@ -208,39 +176,6 @@ const preferencesApi = {
         await apiClient.delete<void>(
             `/users/route-preferences/${preferenceId}`
         );
-    },
-
-    async addSavedRoute(from: string, to: string): Promise<void> {
-        const fromCoords = await locationService.geocode(from);
-        const toCoords = await locationService.geocode(to);
-
-        if (!fromCoords || !toCoords) {
-            console.warn("Could not find coordinates for one of the locations");
-            return;
-        }
-
-        const newRoute = {
-            from: { latitude: fromCoords.lat, longitude: fromCoords.lon },
-            to: { latitude: toCoords.lat, longitude: toCoords.lon },
-        };
-
-        // Check if route already exists
-        const routeKey = getRouteKey(newRoute.from, newRoute.to);
-        const exists = savedRoutes.some(
-            (route) => getRouteKey(route.from, route.to) === routeKey
-        );
-
-        if (!exists) {
-            savedRoutes.push(newRoute);
-        }
-    },
-
-    // Test helper
-    __resetMocks: () => {
-        savedRoutes = [
-            { from: initialRoutes[0], to: initialRoutes[1] },
-            { from: initialRoutes[1], to: initialRoutes[2] },
-        ];
     },
 };
 

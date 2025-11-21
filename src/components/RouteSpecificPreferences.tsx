@@ -144,11 +144,32 @@ export default function RouteSpecificPreferences() {
             return;
         }
 
-        await preferencesApi.addSavedRoute(fromName, toName);
+        // Get coordinates for the places
+        const fromSuggestions = await getSuggestions(fromName);
+        const toSuggestions = await getSuggestions(toName);
 
-        // Refetch the routes to get the updated list
-        await fetchRoutesWithPreferences();
+        const fromPlace = fromSuggestions.find((p) => p.name === fromName);
+        const toPlace = toSuggestions.find((p) => p.name === toName);
 
+        if (!fromPlace || !toPlace) {
+            console.warn("Could not find coordinates for the places");
+            return;
+        }
+
+        // Add new empty route to state
+        const newRoute: RoutePreferences = {
+            from: {
+                coordinates: fromPlace.coordinates,
+                name: fromName,
+            },
+            to: {
+                coordinates: toPlace.coordinates,
+                name: toName,
+            },
+            preferences: [],
+        };
+
+        setRoutesWithPreferences((prev) => [...prev, newRoute]);
         setNewRouteFrom("");
         setNewRouteTo("");
         setFromSuggestions([]);
