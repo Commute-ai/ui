@@ -1,7 +1,8 @@
 import apiClient from "@/lib/api/client";
-import preferencesApi, { Preference } from "@/lib/api/preferences";
+import preferencesApi from "@/lib/api/preferences";
 
 import { ApiError } from "@/types/api";
+import { Preference } from "@/types/preferences";
 
 jest.mock("@/lib/api/client");
 

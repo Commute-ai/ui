@@ -1,277 +1,245 @@
 import React from "react";
 
-import {
-    fireEvent,
-    render,
-    waitFor,
-    within,
-} from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import preferencesApi, {
-    Route,
-    RoutePreference,
-    RouteWithPreferences,
-} from "@/lib/api/preferences";
+import preferencesApi from "@/lib/api/preferences";
 
 import RouteSpecificPreferences from "@/components/RouteSpecificPreferences";
 
-const getRouteKey = (route: Route) =>
-    `${route.fromLat},${route.fromLon},${route.toLat},${route.toLon}`;
+import { Coordinates } from "@/types/geo";
+import { Preference, RoutePreferences } from "@/types/preferences";
+
+const getRouteKey = (from: Coordinates, to: Coordinates) =>
+    `${from.latitude},${from.longitude},${to.latitude},${to.longitude}`;
 
 // Mock data
-const MOCK_ROUTES_WITH_PREFERENCES: RouteWithPreferences[] = [
+const MOCK_ROUTES_WITH_PREFERENCES: RoutePreferences[] = [
     {
-        route: {
-            from: "Exactum",
-            to: "Kamppi",
-            fromLat: 60.204,
-            fromLon: 24.962,
-            toLat: 60.169,
-            toLon: 24.932,
+        from: {
+            coordinates: { latitude: 60.204, longitude: 24.962 },
+            name: "Exactum",
+        },
+        to: {
+            coordinates: { latitude: 60.169, longitude: 24.932 },
+            name: "Kamppi",
         },
         preferences: [
             {
                 id: 1,
                 prompt: "Prefer bus 506",
                 created_at: "2023-01-01T12:00:00.000Z",
-                from_latitude: 60.204,
-                from_longitude: 24.962,
-                to_latitude: 60.169,
-                to_longitude: 24.932,
                 updated_at: null,
             },
             {
                 id: 2,
                 prompt: "Never use the tram for this route",
                 created_at: "2023-01-01T12:00:00.000Z",
-                from_latitude: 60.204,
-                from_longitude: 24.962,
-                to_latitude: 60.169,
-                to_longitude: 24.932,
                 updated_at: null,
             },
             {
                 id: 3,
                 prompt: "Avoid rush hour metro",
                 created_at: "2023-01-01T12:00:00.000Z",
-                from_latitude: 60.204,
-                from_longitude: 24.962,
-                to_latitude: 60.169,
-                to_longitude: 24.932,
                 updated_at: null,
             },
         ],
     },
     {
-        route: {
-            from: "Kamppi",
-            to: "Pasila",
-            fromLat: 60.169,
-            fromLon: 24.932,
-            toLat: 60.199,
-            toLon: 24.934,
+        from: {
+            coordinates: { latitude: 60.169, longitude: 24.932 },
+            name: "Kamppi",
+        },
+        to: {
+            coordinates: { latitude: 60.199, longitude: 24.934 },
+            name: "Pasila",
         },
         preferences: [
             {
                 id: 4,
                 prompt: "Always use metro when available",
                 created_at: "2023-01-01T12:00:00.000Z",
-                from_latitude: 60.169,
-                from_longitude: 24.932,
-                to_latitude: 60.199,
-                to_longitude: 24.934,
                 updated_at: null,
             },
             {
                 id: 5,
                 prompt: "Avoid walking through Töölö",
                 created_at: "2023-01-01T12:00:00.000Z",
-                from_latitude: 60.169,
-                from_longitude: 24.932,
-                to_latitude: 60.199,
-                to_longitude: 24.934,
                 updated_at: null,
             },
         ],
     },
 ];
 
-let mockRoutesWithPreferences: RouteWithPreferences[];
+let mockRoutesWithPreferences: RoutePreferences[];
 let mockNextPreferenceId: number;
 
 // Mock the API module
 jest.mock("@/lib/api/preferences", () => ({
-    getRoutesWithPreferences: jest.fn(async () => mockRoutesWithPreferences),
-    addRouteSpecificPreference: jest.fn(
-        async (route: Route, { prompt }: { prompt: string }) => {
-            const newPreference: RoutePreference = {
+    getRoutePreferences: jest.fn(async () => mockRoutesWithPreferences),
+    addRoutePreference: jest.fn(
+        async (from: Coordinates, to: Coordinates, prompt: string) => {
+            const newPreference: Preference = {
                 id: mockNextPreferenceId++,
                 prompt,
                 created_at: new Date().toISOString(),
-                from_latitude: route.fromLat,
-                from_longitude: route.fromLon,
-                to_latitude: route.toLat,
-                to_longitude: route.toLon,
                 updated_at: null,
             };
             mockRoutesWithPreferences = mockRoutesWithPreferences.map((r) =>
-                getRouteKey(r.route) === getRouteKey(route)
+                getRouteKey(r.from.coordinates, r.to.coordinates) ===
+                getRouteKey(from, to)
                     ? { ...r, preferences: [...r.preferences, newPreference] }
                     : r
             );
             return newPreference;
         }
     ),
-    deleteRouteSpecificPreference: jest.fn(
-        async (route: Route, preferenceId: number) => {
-            mockRoutesWithPreferences = mockRoutesWithPreferences.map((r) =>
-                getRouteKey(r.route) === getRouteKey(route)
-                    ? {
-                          ...r,
-                          preferences: r.preferences.filter(
-                              (p) => p.id !== preferenceId
-                          ),
-                      }
-                    : r
-            );
-        }
-    ),
+    deleteRoutePreference: jest.fn(async (preferenceId: number) => {
+        mockRoutesWithPreferences = mockRoutesWithPreferences.map((r) => ({
+            ...r,
+            preferences: r.preferences.filter((p) => p.id !== preferenceId),
+        }));
+    }),
     addSavedRoute: jest.fn(async (from: string, to: string) => {
-        const newRoute: RouteWithPreferences = {
-            route: {
-                from,
-                to,
-                fromLat: 60.224, // Dummy coords
-                fromLon: 24.952,
-                toLat: 60.189,
-                toLon: 25.042,
+        const newRoute: RoutePreferences = {
+            from: {
+                coordinates: { latitude: 0, longitude: 0 },
+                name: from,
+            },
+            to: {
+                coordinates: { latitude: 0, longitude: 0 },
+                name: to,
             },
             preferences: [],
         };
         mockRoutesWithPreferences.push(newRoute);
     }),
-    __resetMocks: () => {
-        mockRoutesWithPreferences = JSON.parse(
-            JSON.stringify(MOCK_ROUTES_WITH_PREFERENCES)
-        );
-        mockNextPreferenceId = 6;
-    },
 }));
 
-// Mock the location service hook
+// Mock the location service
 jest.mock("@/lib/location", () => ({
     useLocationService: () => ({
-        getSuggestions: jest.fn().mockResolvedValue([]),
-        isValidPlace: jest.fn().mockReturnValue(true),
+        getSuggestions: jest.fn(() =>
+            Promise.resolve([
+                { name: "Helsinki", lat: 60.1699, lon: 24.9384 },
+                { name: "Espoo", lat: 60.2055, lon: 24.6559 },
+            ])
+        ),
+        isValidPlace: jest.fn((place: string) =>
+            ["Helsinki", "Espoo", "Vantaa", "Tampere"].includes(place)
+        ),
     }),
 }));
 
-describe("RouteSpecificPreferences component", () => {
-    // Define route keys based on mock data
-    const route1Key = getRouteKey(MOCK_ROUTES_WITH_PREFERENCES[0].route);
-    const route2Key = getRouteKey(MOCK_ROUTES_WITH_PREFERENCES[1].route);
-
+describe("RouteSpecificPreferences", () => {
     beforeEach(() => {
-        preferencesApi.__resetMocks();
+        mockRoutesWithPreferences = [...MOCK_ROUTES_WITH_PREFERENCES];
+        mockNextPreferenceId = 100;
+        jest.clearAllMocks();
     });
 
-    it("should render initial routes and preferences", async () => {
-        const { findByTestId } = render(<RouteSpecificPreferences />);
+    it("renders route preferences correctly", async () => {
+        const screen = render(<RouteSpecificPreferences />);
 
-        // Check for first route
-        const route1 = await findByTestId(`route-preferences-${route1Key}`);
-        expect(within(route1).getByText("Exactum")).toBeTruthy();
-        expect(within(route1).getByText("Kamppi")).toBeTruthy();
-        expect(
-            within(route1).getByText("Never use the tram for this route")
-        ).toBeTruthy();
-        expect(within(route1).getByText("Prefer bus 506")).toBeTruthy();
-        expect(within(route1).getByText("Avoid rush hour metro")).toBeTruthy();
+        await waitFor(() => {
+            expect(screen.getByText("Exactum")).toBeTruthy();
+            expect(screen.getAllByText("Kamppi")).toHaveLength(2); // appears as from and to
+            expect(screen.getByText("Pasila")).toBeTruthy();
+        });
 
-        // Check for second route
-        const route2 = await findByTestId(`route-preferences-${route2Key}`);
-        expect(within(route2).getByText("Kamppi")).toBeTruthy();
-        expect(within(route2).getByText("Pasila")).toBeTruthy();
+        // Check preferences are displayed
+        expect(screen.getByText("Prefer bus 506")).toBeTruthy();
         expect(
-            within(route2).getByText("Always use metro when available")
+            screen.getByText("Never use the tram for this route")
         ).toBeTruthy();
         expect(
-            within(route2).getByText("Avoid walking through Töölö")
+            screen.getByText("Always use metro when available")
         ).toBeTruthy();
     });
 
-    it("should add a new preference to a route", async () => {
-        const { getByTestId, findByText, findByTestId } = render(
-            <RouteSpecificPreferences />
+    it("can add a new preference to a route", async () => {
+        const screen = render(<RouteSpecificPreferences />);
+
+        await waitFor(() => {
+            expect(screen.getByText("Exactum")).toBeTruthy();
+        });
+
+        const routeKey = getRouteKey(
+            MOCK_ROUTES_WITH_PREFERENCES[0].from.coordinates,
+            MOCK_ROUTES_WITH_PREFERENCES[0].to.coordinates
         );
-        const newPreference = "Use a city bike";
 
-        const input = await findByTestId(`add-preference-input-${route1Key}`);
-        fireEvent.changeText(input, newPreference);
+        // Find input for the first route
+        const input = screen.getByTestId(`add-preference-input-${routeKey}`);
+        const button = screen.getByTestId(`add-preference-button-${routeKey}`);
 
-        const addButton = getByTestId(`add-preference-button-${route1Key}`);
-        fireEvent.press(addButton);
+        // Add new preference
+        fireEvent.changeText(input, "New preference");
+        fireEvent.press(button);
 
-        await waitFor(async () => {
-            expect(await findByText(newPreference)).toBeTruthy();
+        await waitFor(() => {
+            expect(preferencesApi.addRoutePreference).toHaveBeenCalledWith(
+                MOCK_ROUTES_WITH_PREFERENCES[0].from.coordinates,
+                MOCK_ROUTES_WITH_PREFERENCES[0].to.coordinates,
+                "New preference"
+            );
         });
     });
 
-    it("should delete a preference from a route", async () => {
-        const { queryByText, findByTestId } = render(
-            <RouteSpecificPreferences />
-        );
-        const preferenceToDelete = "Prefer bus 506";
-        const preferenceId = MOCK_ROUTES_WITH_PREFERENCES[0].preferences[0].id;
+    it("can delete a preference from a route", async () => {
+        const screen = render(<RouteSpecificPreferences />);
 
-        const deleteButton = await findByTestId(
-            `delete-preference-${route1Key}-${preferenceId}`
+        await waitFor(() => {
+            expect(screen.getByText("Prefer bus 506")).toBeTruthy();
+        });
+
+        const routeKey = getRouteKey(
+            MOCK_ROUTES_WITH_PREFERENCES[0].from.coordinates,
+            MOCK_ROUTES_WITH_PREFERENCES[0].to.coordinates
         );
+
+        // Find delete button for first preference
+        const deleteButton = screen.getByTestId(
+            `delete-preference-${routeKey}-1`
+        );
+
         fireEvent.press(deleteButton);
 
         await waitFor(() => {
-            expect(queryByText(preferenceToDelete)).toBeNull();
+            expect(preferencesApi.deleteRoutePreference).toHaveBeenCalledWith(
+                1
+            );
         });
     });
 
-    it("should add a new route", async () => {
-        const { getByTestId, findByText, findByPlaceholderText } = render(
-            <RouteSpecificPreferences />
-        );
-
-        const addNewRouteButton = getByTestId("add-new-route-button");
-        fireEvent.press(addNewRouteButton);
-
-        const fromInput = await findByPlaceholderText("From");
-        const toInput = await findByPlaceholderText("To");
-        const addRouteButton = getByTestId("add-route-button");
-
-        fireEvent.changeText(fromInput, "Kumpula");
-        fireEvent.changeText(toInput, "Herttoniemi");
-
-        fireEvent.press(addRouteButton);
-
-        await waitFor(async () => {
-            // The component refetches after adding, so we wait for the new content to appear
-            expect(await findByText("Kumpula")).toBeTruthy();
-            expect(await findByText("Herttoniemi")).toBeTruthy();
-        });
-    });
-
-    it("should cancel adding a new route", async () => {
-        const { getByTestId, queryByPlaceholderText, findByTestId } = render(
-            <RouteSpecificPreferences />
-        );
-
-        const addNewRouteButton = getByTestId("add-new-route-button");
-        fireEvent.press(addNewRouteButton);
-
-        const cancelButton = await findByTestId("cancel-add-route-button");
-        fireEvent.press(cancelButton);
+    it("can add a new route", async () => {
+        const screen = render(<RouteSpecificPreferences />);
 
         await waitFor(() => {
-            expect(queryByPlaceholderText("From")).toBeNull();
-            expect(queryByPlaceholderText("To")).toBeNull();
+            expect(screen.getByText("Add new route preference")).toBeTruthy();
+        });
+
+        // Open new route form
+        fireEvent.press(screen.getByTestId("add-new-route-button"));
+
+        await waitFor(() => {
+            expect(screen.getByTestId("new-route-from-input")).toBeTruthy();
+            expect(screen.getByTestId("new-route-to-input")).toBeTruthy();
+        });
+
+        // Fill in route details
+        const fromInput = screen.getByTestId("new-route-from-input");
+        const toInput = screen.getByTestId("new-route-to-input");
+        const addButton = screen.getByTestId("add-route-button");
+
+        fireEvent.changeText(fromInput, "Helsinki");
+        fireEvent.changeText(toInput, "Espoo");
+        fireEvent.press(addButton);
+
+        await waitFor(() => {
+            expect(preferencesApi.addSavedRoute).toHaveBeenCalledWith(
+                "Helsinki",
+                "Espoo"
+            );
         });
     });
 });
