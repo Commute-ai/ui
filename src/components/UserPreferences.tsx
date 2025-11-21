@@ -3,13 +3,15 @@ import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react-native";
 import { TouchableOpacity, View } from "react-native";
 
-import preferencesApi, { type Preference } from "@/lib/api/preferences";
+import preferencesApi from "@/lib/api/preferences";
 
 import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+
+import { type Preference } from "@/types/preferences";
 
 const UserPreferences = () => {
     const { isLoaded } = useAuth();

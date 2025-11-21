@@ -3,24 +3,23 @@ import { useCallback, useEffect, useState } from "react";
 import { MapPin, Plus, X } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
 
-import preferencesApi, {
-    Route,
-    RouteWithPreferences,
-} from "@/lib/api/preferences";
+import preferencesApi from "@/lib/api/preferences";
 import { useLocationService } from "@/lib/location";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
 import { PlaceInput } from "./routing/PlaceInput";
+import { Coordinates } from "@/types/geo";
+import { RoutePreferences } from "@/types/preferences";
 
-const getRouteKey = (route: Route) =>
-    `${route.fromLat},${route.fromLon},${route.toLat},${route.toLon}`;
+const getRouteKey = (from: Coordinates, to: Coordinates) =>
+    `${from.latitude},${from.longitude},${to.latitude},${to.longitude}`;
 
 export default function RouteSpecificPreferences() {
     const { getSuggestions, isValidPlace } = useLocationService();
     const [routesWithPreferences, setRoutesWithPreferences] = useState<
-        RouteWithPreferences[]
+        RoutePreferences[]
     >([]);
     const [newPreferenceTexts, setNewPreferenceTexts] = useState<
         Record<string, string>
@@ -33,7 +32,7 @@ export default function RouteSpecificPreferences() {
 
     const fetchRoutesWithPreferences = useCallback(async () => {
         try {
-            const data = await preferencesApi.getRoutesWithPreferences();
+            const data = await preferencesApi.getRoutePreferences();
             setRoutesWithPreferences(data);
         } catch (error) {
             // In a real app, handle this error
@@ -80,21 +79,24 @@ export default function RouteSpecificPreferences() {
     };
 
     const handleAddRoutePreference = useCallback(
-        async (route: Route) => {
-            const routeKey = getRouteKey(route);
+        async (routePrefs: RoutePreferences) => {
+            const routeKey = getRouteKey(
+                routePrefs.from.coordinates,
+                routePrefs.to.coordinates
+            );
             const prompt = newPreferenceTexts[routeKey]?.trim();
             if (!prompt) return;
 
-            const newPref = await preferencesApi.addRouteSpecificPreference(
-                route,
-                {
-                    prompt,
-                }
+            const newPref = await preferencesApi.addRoutePreference(
+                routePrefs.from.coordinates,
+                routePrefs.to.coordinates,
+                prompt
             );
 
             setRoutesWithPreferences((prev) =>
                 prev.map((r) =>
-                    getRouteKey(r.route) === routeKey
+                    getRouteKey(r.from.coordinates, r.to.coordinates) ===
+                    routeKey
                         ? {
                               ...r,
                               preferences: [...r.preferences, newPref],
@@ -108,15 +110,16 @@ export default function RouteSpecificPreferences() {
     );
 
     const handleDeleteRoutePreference = useCallback(
-        async (route: Route, preferenceId: number) => {
-            await preferencesApi.deleteRouteSpecificPreference(
-                route,
-                preferenceId
+        async (routePrefs: RoutePreferences, preferenceId: number) => {
+            await preferencesApi.deleteRoutePreference(preferenceId);
+            const routeKey = getRouteKey(
+                routePrefs.from.coordinates,
+                routePrefs.to.coordinates
             );
-            const routeKey = getRouteKey(route);
             setRoutesWithPreferences((prev) =>
                 prev.map((r) =>
-                    getRouteKey(r.route) === routeKey
+                    getRouteKey(r.from.coordinates, r.to.coordinates) ===
+                    routeKey
                         ? {
                               ...r,
                               preferences: r.preferences.filter(
@@ -163,8 +166,11 @@ export default function RouteSpecificPreferences() {
             </Text>
 
             <View className="space-y-3">
-                {routesWithPreferences.map(({ route, preferences }) => {
-                    const routeKey = getRouteKey(route);
+                {routesWithPreferences.map((routePrefs) => {
+                    const routeKey = getRouteKey(
+                        routePrefs.from.coordinates,
+                        routePrefs.to.coordinates
+                    );
                     return (
                         <View
                             key={routeKey}
@@ -175,19 +181,19 @@ export default function RouteSpecificPreferences() {
                                 <MapPin className="h-4 w-4 text-teal-600" />
                                 <View className="flex flex-row items-center gap-2 text-sm font-medium">
                                     <Text className="text-foreground">
-                                        {route.from}
+                                        {routePrefs.from.name}
                                     </Text>
                                     <Text className="text-muted-foreground">
                                         →
                                     </Text>
                                     <Text className="text-foreground">
-                                        {route.to}
+                                        {routePrefs.to.name}
                                     </Text>
                                 </View>
                             </View>
 
                             <View className="flex flex-row flex-wrap items-start gap-2">
-                                {preferences.map((pref) => (
+                                {routePrefs.preferences.map((pref) => (
                                     <View
                                         key={pref.id}
                                         className="shrink flex-row items-center gap-2 rounded-full border border-teal-200 bg-teal-100 px-3 py-1.5"
@@ -201,7 +207,7 @@ export default function RouteSpecificPreferences() {
                                             testID={`delete-preference-${routeKey}-${pref.id}`}
                                             onPress={() =>
                                                 handleDeleteRoutePreference(
-                                                    route,
+                                                    routePrefs,
                                                     pref.id
                                                 )
                                             }
@@ -229,7 +235,7 @@ export default function RouteSpecificPreferences() {
                                     testID={`add-preference-button-${routeKey}`}
                                     size="sm"
                                     onPress={() =>
-                                        handleAddRoutePreference(route)
+                                        handleAddRoutePreference(routePrefs)
                                     }
                                     disabled={
                                         !newPreferenceTexts[routeKey]?.trim()

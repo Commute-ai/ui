@@ -1,158 +1,75 @@
 import { locationService } from "../location";
 
-import z from "zod";
+import { z } from "zod";
 
 import apiClient from "./client";
+import { Coordinates } from "@/types/geo";
+import {
+    Preference,
+    PreferenceSchema,
+    RoutePreferences,
+} from "@/types/preferences";
 
-interface RouteData {
-    fromLat: number;
-    fromLon: number;
-    toLat: number;
-    toLon: number;
-}
+// API-specific schemas (only used by this API module)
+const NewPreferenceSchema = z.object({
+    prompt: z.string(),
+});
 
-export interface Route extends RouteData {
-    from: string | null;
-    to: string | null;
-}
+const RoutePreferenceCreateSchema = z.object({
+    prompt: z.string(),
+    from_latitude: z.number(),
+    from_longitude: z.number(),
+    to_latitude: z.number(),
+    to_longitude: z.number(),
+});
 
-const getRouteKey = (route: RouteData) =>
-    `${route.fromLat},${route.fromLon},${route.toLat},${route.toLon}`;
+const RoutePreferenceResponseSchema = z.object({
+    id: z.number(),
+    prompt: z.string(),
+    created_at: z.string().datetime(),
+    updated_at: z.string().datetime().nullable().optional(),
+    from_latitude: z.number(),
+    from_longitude: z.number(),
+    to_latitude: z.number(),
+    to_longitude: z.number(),
+});
 
+type RoutePreferenceResponse = z.infer<typeof RoutePreferenceResponseSchema>;
+
+// Helper to create a unique key for route coordinates
+const getRouteKey = (from: Coordinates, to: Coordinates) =>
+    `${from.latitude},${from.longitude},${to.latitude},${to.longitude}`;
+
+// Some initial routes for development
 const exactum = locationService.geocodeSync("Exactum")!;
 const kamppi = locationService.geocodeSync("Kamppi")!;
 const pasila = locationService.geocodeSync("Pasila")!;
-const helsinki = locationService.geocodeSync("Helsinki")!;
-const espoo = locationService.geocodeSync("Espoo")!;
 
-// Mocked initial routes, in a real app this might come from a different source
-const initialRoutesData: RouteData[] = [
-    {
-        fromLat: exactum.lat,
-        fromLon: exactum.lon,
-        toLat: kamppi.lat,
-        toLon: kamppi.lon,
-    },
-    {
-        fromLat: kamppi.lat,
-        fromLon: kamppi.lon,
-        toLat: pasila.lat,
-        toLon: pasila.lon,
-    },
+const initialRoutes: Coordinates[] = [
+    { latitude: exactum.lat, longitude: exactum.lon },
+    { latitude: kamppi.lat, longitude: kamppi.lon },
+    { latitude: pasila.lat, longitude: pasila.lon },
 ];
 
-let savedRoutesData: RouteData[] = [...initialRoutesData];
-
-const PreferenceSchema = z.object({
-    id: z.number(),
-    prompt: z.string(),
-    created_at: z.string().datetime(),
-    updated_at: z.string().datetime().nullable().optional(),
-});
-
-const PreferencesResponseSchema = z.array(PreferenceSchema);
-
-export type Preference = z.infer<typeof PreferenceSchema>;
-
-export type PreferenceCreate = Omit<
-    Preference,
-    "id" | "created_at" | "updated_at"
->;
-
-const RoutePreferenceSchema = z.object({
-    id: z.number(),
-    prompt: z.string(),
-    from_latitude: z.number().min(-90).max(90),
-    from_longitude: z.number().min(-180).max(180),
-    to_latitude: z.number().min(-90).max(90),
-    to_longitude: z.number().min(-180).max(180),
-    created_at: z.string().datetime(),
-    updated_at: z.string().datetime().nullable().optional(),
-});
-
-export type RoutePreference = z.infer<typeof RoutePreferenceSchema>;
-
-export interface RouteWithPreferences {
-    route: Route;
-    preferences: RoutePreference[];
-}
-
-const initialMockRoutePreferences: { [key: string]: RoutePreference[] } = {
-    [getRouteKey(initialRoutesData[0])]: [
-        {
-            id: 1,
-            prompt: "Prefer bus 506",
-            from_latitude: helsinki.lat,
-            from_longitude: helsinki.lon,
-            to_latitude: espoo.lat,
-            to_longitude: espoo.lon,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-        },
-        {
-            id: 2,
-            prompt: "Never use the tram for this route",
-            from_latitude: helsinki.lat,
-            from_longitude: helsinki.lon,
-            to_latitude: espoo.lat,
-            to_longitude: espoo.lon,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-        },
-        {
-            id: 3,
-            prompt: "Avoid rush hour metro",
-            from_latitude: helsinki.lat,
-            from_longitude: helsinki.lon,
-            to_latitude: espoo.lat,
-            to_longitude: espoo.lon,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-        },
-    ],
-    [getRouteKey(initialRoutesData[1])]: [
-        {
-            id: 4,
-            prompt: "Always use metro when available",
-            from_latitude: helsinki.lat,
-            from_longitude: helsinki.lon,
-            to_latitude: pasila.lat,
-            to_longitude: pasila.lon,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-        },
-        {
-            id: 5,
-            prompt: "Avoid walking through Töölö",
-            from_latitude: helsinki.lat,
-            from_longitude: helsinki.lon,
-            to_latitude: pasila.lat,
-            to_longitude: pasila.lon,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-        },
-    ],
-};
-
-// Use a deep copy for the mutable state
-let mockRoutePreferences: Record<string, RoutePreference[]> = JSON.parse(
-    JSON.stringify(initialMockRoutePreferences)
-);
-let nextId = 100;
+let savedRoutes: { from: Coordinates; to: Coordinates }[] = [
+    { from: initialRoutes[0], to: initialRoutes[1] },
+    { from: initialRoutes[1], to: initialRoutes[2] },
+];
 
 const preferencesApi = {
     async getPreferences(): Promise<Preference[]> {
         return apiClient.get<Preference[]>(
             "/users/preferences",
             {},
-            PreferencesResponseSchema
+            z.array(PreferenceSchema)
         );
     },
 
     async addPreference(prompt: string): Promise<Preference> {
+        const newPreference = NewPreferenceSchema.parse({ prompt });
         return apiClient.post<Preference>(
             "/users/preferences",
-            { prompt },
+            newPreference,
             {},
             PreferenceSchema
         );
@@ -162,74 +79,138 @@ const preferencesApi = {
         return apiClient.delete<void>(`/users/preferences/${preferenceId}`);
     },
 
-    async getRoutesWithPreferences(): Promise<RouteWithPreferences[]> {
-        const resolvedRoutes: Route[] = await Promise.all(
-            savedRoutesData.map(async (routeData) => {
-                const fromName = await locationService.reverseGeocodeAsync(
-                    routeData.fromLat,
-                    routeData.fromLon
-                );
-                const toName = await locationService.reverseGeocodeAsync(
-                    routeData.toLat,
-                    routeData.toLon
-                );
-                return {
-                    ...routeData,
-                    from: fromName,
-                    to: toName,
-                };
-            })
+    // Get all route preferences and group them by route
+    async getRoutePreferences(): Promise<RoutePreferences[]> {
+        const routePreferenceResponses = await apiClient.get<
+            RoutePreferenceResponse[]
+        >(
+            "/users/route-preferences",
+            {},
+            z.array(RoutePreferenceResponseSchema)
         );
 
-        const routesWithPreferences = resolvedRoutes.map((route) => ({
-            route,
-            preferences: mockRoutePreferences[getRouteKey(route)] || [],
+        // Convert API responses to regular preferences
+        const preferences: (Preference & {
+            from: Coordinates;
+            to: Coordinates;
+        })[] = routePreferenceResponses.map((resp) => ({
+            id: resp.id,
+            prompt: resp.prompt,
+            created_at: resp.created_at,
+            updated_at: resp.updated_at,
+            from: {
+                latitude: resp.from_latitude,
+                longitude: resp.from_longitude,
+            },
+            to: { latitude: resp.to_latitude, longitude: resp.to_longitude },
         }));
 
-        return Promise.resolve(routesWithPreferences);
-    },
+        // Group by route coordinates
+        const routeMap = new Map<string, RoutePreferences>();
 
-    async addRouteSpecificPreference(
-        route: RouteData,
-        preference: PreferenceCreate
-    ): Promise<RoutePreference> {
-        const routeKey = getRouteKey(route);
-        console.log(
-            `Adding preference to route ${routeKey}: ${preference.prompt}`
-        );
-        const newPreference: RoutePreference = {
-            id: nextId++, // Incrementing ID to ensure uniqueness
-            ...preference,
-            prompt: preference.prompt,
-            from_latitude: espoo.lat,
-            from_longitude: espoo.lon,
-            to_latitude: helsinki.lat,
-            to_longitude: helsinki.lon,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-        };
-        const existingPrefs = mockRoutePreferences[routeKey] || [];
-        mockRoutePreferences[routeKey] = [...existingPrefs, newPreference];
-        return Promise.resolve(newPreference);
-    },
+        for (const pref of preferences) {
+            const routeKey = getRouteKey(pref.from, pref.to);
 
-    async deleteRouteSpecificPreference(
-        route: RouteData,
-        preferenceId: number
-    ): Promise<void> {
-        const routeKey = getRouteKey(route);
-        console.log(
-            `Deleting preference ${preferenceId} from route ${routeKey}`
-        );
-        if (mockRoutePreferences[routeKey]) {
-            mockRoutePreferences[routeKey] = mockRoutePreferences[
-                routeKey
-            ].filter((p) => p.id !== preferenceId);
+            if (!routeMap.has(routeKey)) {
+                routeMap.set(routeKey, {
+                    from: {
+                        coordinates: pref.from,
+                    },
+                    to: {
+                        coordinates: pref.to,
+                    },
+                    preferences: [],
+                });
+            }
+
+            routeMap.get(routeKey)!.preferences.push({
+                id: pref.id,
+                prompt: pref.prompt,
+                created_at: pref.created_at,
+                updated_at: pref.updated_at,
+            });
         }
-        return Promise.resolve();
+
+        // Add saved routes that don't have preferences yet
+        for (const savedRoute of savedRoutes) {
+            const routeKey = getRouteKey(savedRoute.from, savedRoute.to);
+            if (!routeMap.has(routeKey)) {
+                routeMap.set(routeKey, {
+                    from: {
+                        coordinates: savedRoute.from,
+                    },
+                    to: {
+                        coordinates: savedRoute.to,
+                    },
+                    preferences: [],
+                });
+            }
+        }
+
+        // Add location names and return
+        const result: RoutePreferences[] = [];
+        for (const route of routeMap.values()) {
+            const fromName = await locationService.reverseGeocodeAsync(
+                route.from.coordinates.latitude,
+                route.from.coordinates.longitude
+            );
+            const toName = await locationService.reverseGeocodeAsync(
+                route.to.coordinates.latitude,
+                route.to.coordinates.longitude
+            );
+
+            result.push({
+                from: {
+                    coordinates: route.from.coordinates,
+                    name: fromName,
+                },
+                to: {
+                    coordinates: route.to.coordinates,
+                    name: toName,
+                },
+                preferences: route.preferences,
+            });
+        }
+
+        return result;
     },
 
-    addSavedRoute: async (from: string, to: string): Promise<void> => {
+    async addRoutePreference(
+        from: Coordinates,
+        to: Coordinates,
+        prompt: string
+    ): Promise<Preference> {
+        const createData = RoutePreferenceCreateSchema.parse({
+            prompt,
+            from_latitude: from.latitude,
+            from_longitude: from.longitude,
+            to_latitude: to.latitude,
+            to_longitude: to.longitude,
+        });
+
+        const response = await apiClient.post<RoutePreferenceResponse>(
+            "/users/route-preferences",
+            createData,
+            {},
+            RoutePreferenceResponseSchema
+        );
+
+        // Return as regular preference (the route info is just for grouping)
+        return {
+            id: response.id,
+            prompt: response.prompt,
+            created_at: response.created_at,
+            updated_at: response.updated_at,
+        };
+    },
+
+    async deleteRoutePreference(preferenceId: number): Promise<void> {
+        await apiClient.delete<void>(
+            `/users/route-preferences/${preferenceId}`
+        );
+    },
+
+    async addSavedRoute(from: string, to: string): Promise<void> {
         const fromCoords = await locationService.geocode(from);
         const toCoords = await locationService.geocode(to);
 
@@ -238,33 +219,28 @@ const preferencesApi = {
             return;
         }
 
-        const newRouteData: RouteData = {
-            fromLat: fromCoords.lat,
-            fromLon: fromCoords.lon,
-            toLat: toCoords.lat,
-            toLon: toCoords.lon,
+        const newRoute = {
+            from: { latitude: fromCoords.lat, longitude: fromCoords.lon },
+            to: { latitude: toCoords.lat, longitude: toCoords.lon },
         };
 
-        const routeKey = getRouteKey(newRouteData);
-        const routeExists = savedRoutesData.some(
-            (route) => getRouteKey(route) === routeKey
+        // Check if route already exists
+        const routeKey = getRouteKey(newRoute.from, newRoute.to);
+        const exists = savedRoutes.some(
+            (route) => getRouteKey(route.from, route.to) === routeKey
         );
 
-        if (routeExists) {
-            return;
+        if (!exists) {
+            savedRoutes.push(newRoute);
         }
-
-        savedRoutesData.push(newRouteData);
-        mockRoutePreferences[routeKey] = [];
     },
 
-    // Test helper to reset the mock state
+    // Test helper
     __resetMocks: () => {
-        mockRoutePreferences = JSON.parse(
-            JSON.stringify(initialMockRoutePreferences)
-        );
-        savedRoutesData = [...initialRoutesData];
-        nextId = 100;
+        savedRoutes = [
+            { from: initialRoutes[0], to: initialRoutes[1] },
+            { from: initialRoutes[1], to: initialRoutes[2] },
+        ];
     },
 };
 
