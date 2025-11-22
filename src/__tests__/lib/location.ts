@@ -4,10 +4,11 @@ describe("Location Service", () => {
     describe("getSuggestions", () => {
         it("returns suggestions for valid partial input", async () => {
             const suggestions = await locationService.getSuggestions("Hel");
-            expect(suggestions).toHaveLength(2);
+            expect(suggestions).toHaveLength(3);
             expect(suggestions.map((s) => s.name)).toEqual([
                 "Helsinki",
                 "Helsingin Yliopisto",
+                "Helsinki Cathedral",
             ]);
         });
 
@@ -23,10 +24,11 @@ describe("Location Service", () => {
 
         it("returns case-insensitive matches", async () => {
             const suggestions = await locationService.getSuggestions("hel");
-            expect(suggestions).toHaveLength(2);
+            expect(suggestions).toHaveLength(3);
             expect(suggestions.map((s) => s.name)).toEqual([
                 "Helsinki",
                 "Helsingin Yliopisto",
+                "Helsinki Cathedral",
             ]);
         });
     });
