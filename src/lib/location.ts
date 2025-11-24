@@ -72,6 +72,116 @@ const HELSINKI_PLACES: Place[] = [
     },
     { coordinates: { latitude: 60.199, longitude: 24.934 }, name: "Pasila" },
     { coordinates: { latitude: 60.204, longitude: 24.962 }, name: "Exactum" },
+    {
+        coordinates: { latitude: 60.145, longitude: 24.985 },
+        name: "Suomenlinna",
+    },
+    {
+        coordinates: { latitude: 60.188, longitude: 24.942 },
+        name: "Linnanmäki",
+    },
+    { coordinates: { latitude: 60.177, longitude: 24.915 }, name: "Töölö" },
+    { coordinates: { latitude: 60.16, longitude: 24.938 }, name: "Punavuori" },
+    { coordinates: { latitude: 60.191, longitude: 24.945 }, name: "Alppila" },
+    { coordinates: { latitude: 60.203, longitude: 24.965 }, name: "Kumpula" },
+    { coordinates: { latitude: 60.173, longitude: 24.938 }, name: "Oodi" },
+    {
+        coordinates: { latitude: 60.172, longitude: 24.925 },
+        name: "Temppeliaukion kirkko",
+    },
+    { coordinates: { latitude: 60.167, longitude: 24.945 }, name: "Esplanadi" },
+    { coordinates: { latitude: 60.179, longitude: 24.952 }, name: "Hakaniemi" },
+    {
+        coordinates: { latitude: 60.184, longitude: 24.887 },
+        name: "Seurasaari",
+    },
+    {
+        coordinates: { latitude: 60.158, longitude: 24.956 },
+        name: "Kaivopuisto",
+    },
+    {
+        coordinates: { latitude: 60.168, longitude: 24.96 },
+        name: "Uspenskin katedraali",
+    },
+    { coordinates: { latitude: 60.17, longitude: 24.945 }, name: "Ateneum" },
+    { coordinates: { latitude: 60.172, longitude: 24.935 }, name: "Kiasma" },
+    { coordinates: { latitude: 60.16, longitude: 24.87 }, name: "Lauttasaari" },
+    { coordinates: { latitude: 60.196, longitude: 24.96 }, name: "Vallila" },
+    {
+        coordinates: { latitude: 60.21, longitude: 24.978 },
+        name: "Arabianranta",
+    },
+    {
+        coordinates: { latitude: 60.198, longitude: 24.869 },
+        name: "Munkkiniemi",
+    },
+    { coordinates: { latitude: 60.223, longitude: 24.895 }, name: "Haaga" },
+    { coordinates: { latitude: 60.224, longitude: 25.077 }, name: "Itäkeskus" },
+    { coordinates: { latitude: 60.239, longitude: 25.085 }, name: "Kontula" },
+    { coordinates: { latitude: 60.252, longitude: 25.021 }, name: "Malmi" },
+    {
+        coordinates: { latitude: 60.174, longitude: 24.931 },
+        name: "Finlandia-talo",
+    },
+    {
+        coordinates: { latitude: 60.173, longitude: 24.933 },
+        name: "Musiikkitalo",
+    },
+    {
+        coordinates: { latitude: 60.175, longitude: 24.932 },
+        name: "Kansallismuseo",
+    },
+    {
+        coordinates: { latitude: 60.187, longitude: 24.927 },
+        name: "Olympiastadion",
+    },
+    {
+        coordinates: { latitude: 60.163, longitude: 24.915 },
+        name: "Ruoholahti",
+    },
+    {
+        coordinates: { latitude: 60.155, longitude: 24.917 },
+        name: "Jätkäsaari",
+    },
+    {
+        coordinates: { latitude: 60.187, longitude: 24.978 },
+        name: "Kalasatama",
+    },
+    {
+        coordinates: { latitude: 60.195, longitude: 25.045 },
+        name: "Herttoniemi",
+    },
+    { coordinates: { latitude: 60.185, longitude: 25.021 }, name: "Kulosaari" },
+    { coordinates: { latitude: 60.191, longitude: 24.894 }, name: "Meilahti" },
+    { coordinates: { latitude: 60.178, longitude: 25.06 }, name: "Laajasalo" },
+    {
+        coordinates: { latitude: 60.182, longitude: 24.913 },
+        name: "Sibelius Monument",
+    },
+    {
+        coordinates: { latitude: 60.17, longitude: 24.952 },
+        name: "Helsinki Cathedral",
+    },
+    { coordinates: { latitude: 60.165, longitude: 24.94 }, name: "Bulevardi" },
+    { coordinates: { latitude: 60.18, longitude: 24.957 }, name: "Caisa" },
+    {
+        coordinates: { latitude: 60.162, longitude: 24.941 },
+        name: "Dianapuisto",
+    },
+    {
+        coordinates: { latitude: 60.198, longitude: 24.845 },
+        name: "Gallen-Kallelan Museo",
+    },
+    { coordinates: { latitude: 60.295, longitude: 24.568 }, name: "Nuuksio" },
+    {
+        coordinates: { latitude: 60.178, longitude: 25.045 },
+        name: "Villa Wuorio",
+    },
+    {
+        coordinates: { latitude: 60.167, longitude: 24.938 },
+        name: "Yrjönkadun uimahalli",
+    },
+    { coordinates: { latitude: 60.26, longitude: 25.21 }, name: "Östersundom" },
 ];
 
 class HardcodedLocationService implements LocationService {
