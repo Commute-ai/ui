@@ -1,6 +1,6 @@
 {
     "name": "commuteai-ui",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Commute.ai - Your intelligent commute companion",
     "main": "expo-router/entry",
     "scripts": {
