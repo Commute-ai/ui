@@ -3,11 +3,12 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import preferencesApi from "@/lib/api/preferences";
-import { type Preference } from "@/lib/api/preferences";
 
 import { useAuth } from "@/hooks/useAuth";
 
 import UserPreferences from "@/components/UserPreferences";
+
+import { type Preference } from "@/types/preferences";
 
 jest.mock("@/hooks/useAuth");
 jest.mock("@/lib/api/preferences");
