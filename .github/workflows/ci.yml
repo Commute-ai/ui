@@ -79,22 +79,26 @@ jobs:
                   fi
 
             - name: 🚀 Push OTA Update
+              env:
+                  COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
               run: |
                   echo "📱 Pushing update to ${{ steps.channel.outputs.channel }} channel"
                   eas update \
                     --branch ${{ steps.channel.outputs.channel }} \
-                    --message "${{ github.event.head_commit.message }}" \
+                    --message "$COMMIT_MESSAGE" \
                     --environment "${{ steps.channel.outputs.environment }}"
                   echo "✅ Update published! All installed apps will receive it automatically."
 
             - name: 📝 Add job summary
               if: always()
+              env:
+                  COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
               run: |
                   if [[ "${{ job.status }}" == "success" ]]; then
                     echo "### ✅ OTA Update Published" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                     echo "- **Channel:** \`${{ steps.channel.outputs.channel }}\`" >> $GITHUB_STEP_SUMMARY
-                    echo "- **Commit:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
+                    echo "- **Commit:** $COMMIT_MESSAGE" >> $GITHUB_STEP_SUMMARY
                     echo "- **Branch:** \`${GITHUB_REF#refs/heads/}\`" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                     echo "All devices with the app installed will receive this update automatically on next launch." >> $GITHUB_STEP_SUMMARY
